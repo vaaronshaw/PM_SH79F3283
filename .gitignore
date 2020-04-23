@@ -6,11 +6,16 @@
 *.ko
 *.obj
 *.elf
+*.__i
+*.lnp
+*.htm
 
 # Linker output
 *.ilk
 *.map
 *.exp
+*.lst
+*.m51
 
 # Precompiled Headers
 *.gch
@@ -50,3 +55,4 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+.vs/
