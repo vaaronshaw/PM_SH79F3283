@@ -64,13 +64,14 @@ typedef struct {
 //#define BUZZ_CTRL_GPIO_PORT		GpioPortC
 //#define BUZZ_CTRL_GPIO_PIN		GpioPin14
 
-#define BUZZ_CTRL_BEEP_ON()		 (BUZCON = 0x03)	//Gpio_ClrIO(BUZZ_CTRL_GPIO_PORT, BUZZ_CTRL_GPIO_PIN) 
-#define BUZZ_CTRL_BEEP_OFF()	 (BUZCON = 0x02)	//Gpio_SetIO(BUZZ_CTRL_GPIO_PORT, BUZZ_CTRL_GPIO_PIN) 
+#define BUZZ_CTRL_BEEP_ON()		 (P0 |= 0x04)	//Gpio_ClrIO(BUZZ_CTRL_GPIO_PORT, BUZZ_CTRL_GPIO_PIN) 
+#define BUZZ_CTRL_BEEP_OFF()	 (P0 &= ~0x04)	//Gpio_SetIO(BUZZ_CTRL_GPIO_PORT, BUZZ_CTRL_GPIO_PIN) 
 
-#define BUZZ_OUTPUT_ENABLE()     (BUZCON = 0x03)	//{Tim3_M0_Enable_Output(TRUE); /*TIM3 端口输出使能*/Tim3_M0_Run();}
-#define BUZZ_OUTPUT_DISABLE()    (BUZCON = 0x02)	//{Tim3_M0_Enable_Output(FALSE); /*TIM3 端口输出使能*/Tim3_M0_Stop();}
+#define BUZZ_OUTPUT_ENABLE()     {PWMLO = 0x55; PWMEN =0x81; PWMLO = 0x0;}	//{Tim3_M0_Enable_Output(TRUE); /*TIM3 端口输出使能*/Tim3_M0_Run();}
+#define BUZZ_OUTPUT_DISABLE()    {PWMLO = 0x55; PWMEN = 0x0; PWMLO = 0x0;}	//{Tim3_M0_Enable_Output(FALSE); /*TIM3 端口输出使能*/Tim3_M0_Stop();}
 
 
+extern void BUZZ_vInit(void);
 extern void BUZZ_vSetBuzzAlarm(TBuzzerRhythmIndex tType);
 extern void BUZZ_vTaskHandler(void);
 

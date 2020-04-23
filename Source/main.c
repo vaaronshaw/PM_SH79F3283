@@ -28,8 +28,8 @@
 //#include "Twi_define.h"
 #include "Display/display.h"
 #include "Uart/Uart2PM.h"
-
-
+#include "Buzzer/buzzer.h"
+#include "Light/light.h"
 /****************************Global Variables Start*************************************************/
  
 /****************************Global Variables End**************************************************/
@@ -58,10 +58,15 @@ void main()
     init_timer3();  //!< timer init as systick
     U2P_vInit();    //!< uart init 
     //BTN_vTouchInit();
-    DIS_vInit();
+    //DIS_vInit();
     WDT_vInit();
+    BUZZ_vInit();
+    LIG_vInit();
+
 
     EA = 1;	//!< enable all interrupts
+
+    LIG_SET_OFF();
 
     while(1)
     {

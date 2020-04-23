@@ -311,7 +311,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Include;..\..\Source;..\..\Source\Button;..\..\Source\Isr;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source\Display;..\..\Source\Buzzer</IncludePath>
+              <IncludePath>..\..\Include;..\..\Source;..\..\Source\Button;..\..\Source\Isr;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source\Display;..\..\Source\Buzzer;..\..\Source\Light;..\..\Source\Motor</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -567,6 +567,26 @@
               <FileName>buzzer.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\Source\Buzzer\buzzer.h</FilePath>
+            </File>
+            <File>
+              <FileName>light.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Light\light.c</FilePath>
+            </File>
+            <File>
+              <FileName>light.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\Light\light.h</FilePath>
+            </File>
+            <File>
+              <FileName>motor.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Motor\motor.c</FilePath>
+            </File>
+            <File>
+              <FileName>motor.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\Motor\motor.h</FilePath>
             </File>
           </Files>
         </Group>

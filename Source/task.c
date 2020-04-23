@@ -22,7 +22,7 @@ static TaskStruct TASK_tTaskTbl[] = {
 /**running flag, 	init time slice,		time slice reset value,		task handler*/
 	{0, 			TASK_MS2TICK(10), 		TASK_MS2TICK(10), 			TMR_vTimerIsr},		//!< must not changed, software timer
 	{0, 			TASK_MS2TICK(1000), 	TASK_MS2TICK(1000), 		TASK_vUpdateWorkingTime},
-	{0, 			TASK_MS2TICK(500), 		TASK_MS2TICK(500),			DIS_vBlinkTest},
+	//{0, 			TASK_MS2TICK(500), 		TASK_MS2TICK(500),			DIS_vBlinkTest},
 	{0,				TASK_MS2TICK(0),		TASK_MS2TICK(0),			U2P_vDllTaskHandler},
 	{0,				TASK_MS2TICK(0),		TASK_MS2TICK(0),			U2P_vPLTaskHandler},
 	{0,				TASK_MS2TICK(6),		TASK_MS2TICK(6),			BUZZ_vTaskHandler}
