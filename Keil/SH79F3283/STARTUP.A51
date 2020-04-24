@@ -27,7 +27,7 @@ $NOMOD51
 ; <o> IDATALEN: IDATA memory size <0x0-0x100>
 ;     <i> Note: The absolute start-address of IDATA memory is always 0
 ;     <i>       The IDATA space overlaps physically the DATA and BIT areas.
-IDATALEN        EQU     80H
+IDATALEN        EQU     100H
 ;
 ; <o> XDATASTART: XDATA memory start address <0x0-0xFFFF> 
 ;     <i> The absolute start address of XDATA memory
@@ -35,7 +35,7 @@ XDATASTART      EQU     0
 ;
 ; <o> XDATALEN: XDATA memory size <0x0-0xFFFF> 
 ;     <i> The length of XDATA memory in bytes.
-XDATALEN        EQU     0      
+XDATALEN        EQU     500H      
 ;
 ; <o> PDATASTART: PDATA memory start address <0x0-0xFFFF> 
 ;     <i> The absolute start address of PDATA memory

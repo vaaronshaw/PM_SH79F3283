@@ -1,8 +1,8 @@
 #include "SH79F328.h"
 #include "intrins.h"
 #include "cpu.h"
-#define ADC_ONE
-//#define ADC_ARRAY
+//#define ADC_ONE
+#define ADC_ARRAY
 
 void init_adc()
 {
@@ -14,6 +14,7 @@ void init_adc()
 24M SYSCLK, 500ksps
 ****************************************************************************************/
  	ADT=0x21;
+
 	#ifdef ADC_ONE
 	ADCON2 = 0x0;	//1-channel
 	ADCH1 = 0x01;	//AN0
@@ -24,6 +25,7 @@ void init_adc()
 	while(ADCON1 & 0x01);	//check go/done
 	ADC_res[i] = ((ADDXH << 4) + (ADDXL >> 4));
 	#endif
+
 	#ifdef ADC_ARRAY
 	ADCON2 = 0x72;	//8-channels,time of gap:4Tad
 	ADCH1 = 0xff;	//P3.7~P3.4, P4.3~P4.0,AN7~AN0channel as adc input

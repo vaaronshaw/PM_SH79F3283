@@ -13,6 +13,7 @@
 #include "Uart/Uart2PM.h"
 #include "wdt.h"
 #include "Buzzer/buzzer.h"
+#include "Motor/motor.h"
 
 
 
@@ -25,7 +26,8 @@ static TaskStruct TASK_tTaskTbl[] = {
 	//{0, 			TASK_MS2TICK(500), 		TASK_MS2TICK(500),			DIS_vBlinkTest},
 	{0,				TASK_MS2TICK(0),		TASK_MS2TICK(0),			U2P_vDllTaskHandler},
 	{0,				TASK_MS2TICK(0),		TASK_MS2TICK(0),			U2P_vPLTaskHandler},
-	{0,				TASK_MS2TICK(6),		TASK_MS2TICK(6),			BUZZ_vTaskHandler}
+	{0,				TASK_MS2TICK(6),		TASK_MS2TICK(6),			BUZZ_vTaskHandler},
+	//{0, 			TASK_MS2TICK(20), 		TASK_MS2TICK(20), 			MOT_vTaskHandler}
 };
 
 
@@ -56,7 +58,7 @@ void TASK_vScheduleTasks(void)
 
 	for(i=0; i<TASK_NUMER_OF_TASKS; i++)
 	{
-		WDT_FEED();
+		//WDT_FEED();
 
 		if(TASK_tTaskTbl[i].ucIsRun || (0==TASK_tTaskTbl[i].uiSliceResetValue))
 		{
@@ -65,7 +67,7 @@ void TASK_vScheduleTasks(void)
 		}
 	}
 
-	//U2P_vDllTaskHandler();
+	MOT_vTaskHandler();
 }
 
 static void TASK_vUpdateWorkingTime(void)

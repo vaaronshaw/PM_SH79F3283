@@ -311,7 +311,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Include;..\..\Source;..\..\Source\Button;..\..\Source\Isr;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source\Display;..\..\Source\Buzzer;..\..\Source\Light;..\..\Source\Motor</IncludePath>
+              <IncludePath>..\..\Include;..\..\Source;..\..\Source\Button;..\..\Source\Isr;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source\Display;..\..\Source\Buzzer;..\..\Source\Light;..\..\Source\Motor;..\..\Source\Fan</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -587,6 +587,16 @@
               <FileName>motor.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\Source\Motor\motor.h</FilePath>
+            </File>
+            <File>
+              <FileName>fan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Fan\fan.c</FilePath>
+            </File>
+            <File>
+              <FileName>fan.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\Fan\fan.h</FilePath>
             </File>
           </Files>
         </Group>

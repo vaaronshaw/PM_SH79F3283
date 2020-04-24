@@ -1,6 +1,7 @@
 #ifndef _MOTOR_H
 #define _MOTOR_H
 
+#include "api_ext.h"
 #include "defines.h"
 #include "cpu.h"
 #if (CPU_TYPE==CPU_SH79F3283)
@@ -12,61 +13,47 @@
 #endif
 
 
-#define MOT_RELAY1_PIN		0x40
-#define MOT_RELAY2_PIN		0x20
-#define MOT_RELAY3_PIN		0x10
-#define MOT_RELAY4_PIN		0x08
+#define MOT_PHASE1_PORT		P3
+#define MOT_SLEEP1_PORT		P3
+#define MOT_ENABLE1_PORT	P3
+#define MOT_PHASE2_PORT		P3
+#define MOT_SENSE_I1_PORT	P3
+#define MOT_SLEEP2_PORT		P3
+#define MOT_ENABLE2_PORT	P3
+#define MOT_SENSE_I2_PORT	P3
 
 
-
-#define MOT_RELAY1_ON()		(P2 |= MOT_RELAY1_PIN)
-#define MOT_RELAY1_OFF()	(P2 &= ~MOT_RELAY1_PIN)
-
-#define MOT_RELAY2_ON()		(P2 |= MOT_RELAY2_PIN)
-#define MOT_RELAY2_OFF()	(P2 &= ~MOT_RELAY2_PIN)
-
-#define MOT_RELAY3_ON()		(P1 |= MOT_RELAY3_PIN)
-#define MOT_RELAY3_OFF()	(P1 &= ~MOT_RELAY3_PIN)
-
-#define MOT_RELAY4_ON()		(P1 |= MOT_RELAY4_PIN)
-#define MOT_RELAY4_OFF()	(P1 &= ~MOT_RELAY4_PIN)
+#define MOT_PHASE1_PIN		0x01
+#define MOT_SLEEP1_PIN		0x02
+#define MOT_ENABLE1_PIN		0x04
+#define MOT_PHASE2_PIN		0x08
+#define MOT_SENSE_I1_PIN	0x10
+#define MOT_SLEEP2_PIN		0x20
+#define MOT_ENABLE2_PIN		0x40
+#define MOT_SENSE_I2_PIN	0x80
 
 
+#define MOT_SET_IO_HIGH(port, pin)	((port) |= (pin))
+#define MOT_SET_IO_LOW(port, pin)	((port) &= ~(pin))
+
+#define MOT_AD_SAMPLE_TIMES 5
 
 
 typedef enum {
-	MOT_SPEED_0 = 0,
-	MOT_SPEED_1,
-	MOT_SPEED_2,
-	MOT_SPEED_3,
-	MOT_SPEED_4
-}TmotorSpeedDef;
+	MOT_TASK_INIT = 0,
+	MOT_TASK_IDLE,
+	MOT_TASK_CLOSE,
+	MOT_TASK_OPEN
+}TMotorTaskDef;
 
-
-
-
-
-
+typedef enum {
+	MOT_INDEX_LEFT = 0,
+	MOT_INDEX_RIGHT,
+	MOT_INDEX_NUM
+}TMotorIndexDef;
 
 extern void MOT_vInit(void);
-extern void MOT_vSetSpeed(TmotorSpeedDef tSpeedIndex);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+extern void MOT_vTaskHandler(void);
 
 
 

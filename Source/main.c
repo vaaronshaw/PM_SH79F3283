@@ -30,6 +30,8 @@
 #include "Uart/Uart2PM.h"
 #include "Buzzer/buzzer.h"
 #include "Light/light.h"
+#include "Fan/fan.h"
+#include "Motor/motor.h"
 /****************************Global Variables Start*************************************************/
  
 /****************************Global Variables End**************************************************/
@@ -62,6 +64,9 @@ void main()
     WDT_vInit();
     BUZZ_vInit();
     LIG_vInit();
+    FAN_vInit();
+    MOT_vInit();
+
 
 
     EA = 1;	//!< enable all interrupts
