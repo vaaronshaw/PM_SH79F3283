@@ -23,6 +23,10 @@ void MOT_vInit(void)
 	P3 &= ~(MOT_PHASE1_PIN | MOT_SLEEP1_PIN | MOT_ENABLE1_PIN | MOT_PHASE2_PIN | MOT_SLEEP2_PIN | MOT_ENABLE2_PIN);	//!< low
 	//P3 |= (MOT_PHASE1_PIN | MOT_SLEEP1_PIN | MOT_ENABLE1_PIN | MOT_PHASE2_PIN | MOT_SLEEP2_PIN | MOT_ENABLE2_PIN);	//!< low
 
+	/**P1.2: SWITCH*/
+	P1CR &= ~(MOT_SWITCH_PIN);	//!< input
+	P1PCR &= ~(MOT_SWITCH_PIN);	//!< no pull up
+
 	/**adc init for input voltage detection*/
 	ADCON = 0x84;	//!< ADON=1, VDD as vref,  ADC channel = AN4, GO/DONE = 0
 	ADCON1 = 0x00;	//!< 12bits resolution

@@ -21,20 +21,23 @@
 #define MOT_SLEEP2_PORT		P3
 #define MOT_ENABLE2_PORT	P3
 #define MOT_SENSE_I2_PORT	P3
+#define MOT_SWITCH_PORT		P1
 
 
 #define MOT_PHASE1_PIN		0x01
-#define MOT_SLEEP1_PIN		0x02
-#define MOT_ENABLE1_PIN		0x04
+#define MOT_SLEEP1_PIN		0x02	//!< P3.1, set low to enter low-power sleep mode
+#define MOT_ENABLE1_PIN		0x04	//!< P3.2, set high to enable the H-bridge
 #define MOT_PHASE2_PIN		0x08
 #define MOT_SENSE_I1_PIN	0x10
 #define MOT_SLEEP2_PIN		0x20
 #define MOT_ENABLE2_PIN		0x40
-#define MOT_SENSE_I2_PIN	0x80
+#define MOT_SENSE_I2_PIN	0x80	//!< P3.7
+#define MOT_SWITCH_PIN		0x04	//!< P1.2
 
 
 #define MOT_SET_IO_HIGH(port, pin)	((port) |= (pin))
 #define MOT_SET_IO_LOW(port, pin)	((port) &= ~(pin))
+#define MOT_GET_IO_STATE(port, pin)	((port) & (pin))
 
 #define MOT_AD_SAMPLE_TIMES 5
 

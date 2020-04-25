@@ -75,14 +75,6 @@ void TASK_vScheduleTasks(void)
 			TASK_tTaskRunningInfo[i].ucIsRun = 0;
 		}
 	}
-
-	//if (0 == TMR_uiTimer[TMR_U2P_TEST])
-	//{
-	//	TMR_uiTimer[TMR_U2P_TEST] = TMR_TIME_MS2TICKS(10);
-	//	MOT_vTaskHandler();
-
-	//}
-
 }
 
 static void TASK_vUpdateWorkingTime(void)
