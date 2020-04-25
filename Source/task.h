@@ -18,14 +18,15 @@
 
 
 
-typedef struct _TaskStruct{
-	uchar ucIsRun;        	//��ʾ�����Ƿ�������
-	uint uiSliceValue;   	//!< time slice for task running, 0 means  task run for every main loop
-	uint uiSliceResetValue;  	//!< reset value for time slice
-	void (*pvTaskPointer)(void);   //����ĺ���ָ��
-}TaskStruct;
+typedef struct{
+    uchar ucIsRun;        			//��ʾ�����Ƿ�������
+	uint uiSliceValue;   			//!< time slice for task running, 0 means  task run for every main loop
+}TaskRunningInfoDef;
 
-
+typedef struct {
+    const uint uiSliceResetValue;  		//!< reset value for time slice
+    void (* const pvTaskPointer)(void);    //����ĺ���ָ��
+}TtaskDef;
 
 
 

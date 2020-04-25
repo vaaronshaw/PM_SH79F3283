@@ -19,17 +19,26 @@
 
 static void TASK_vUpdateWorkingTime(void);
 
-static TaskStruct TASK_tTaskTbl[] = {
-/**running flag, 	init time slice,		time slice reset value,		task handler*/
-	{0, 			TASK_MS2TICK(10), 		TASK_MS2TICK(10), 			TMR_vTimerIsr},		//!< must not changed, software timer
-	{0, 			TASK_MS2TICK(1000), 	TASK_MS2TICK(1000), 		TASK_vUpdateWorkingTime},
-	//{0, 			TASK_MS2TICK(500), 		TASK_MS2TICK(500),			DIS_vBlinkTest},
-	{0,				TASK_MS2TICK(0),		TASK_MS2TICK(0),			U2P_vDllTaskHandler},
-	{0,				TASK_MS2TICK(0),		TASK_MS2TICK(0),			U2P_vPLTaskHandler},
-	{0,				TASK_MS2TICK(6),		TASK_MS2TICK(6),			BUZZ_vTaskHandler},
-	//{0, 			TASK_MS2TICK(20), 		TASK_MS2TICK(20), 			MOT_vTaskHandler}
+static TtaskDef code TASK_tTaskTbl[] = {
+	/**slice reset value,		task handler*/
+	{TASK_MS2TICK(10),			TMR_vTimerIsr},		//!< must not changed, software timer
+	{TASK_MS2TICK(1000),		TASK_vUpdateWorkingTime},
+	{TASK_MS2TICK(0),			U2P_vDllTaskHandler},
+	{TASK_MS2TICK(0),			U2P_vPLTaskHandler},
+	{TASK_MS2TICK(6),			BUZZ_vTaskHandler},
+	{TASK_MS2TICK(20),			MOT_vTaskHandler}
 };
 
+/**index sequence must match with TASK_tTaskTbl[]*/
+static TaskRunningInfoDef TASK_tTaskRunningInfo[] = {
+	/**Running Flah,			init slice time*/
+	{0, 						TASK_MS2TICK(10)},
+	{0, 						TASK_MS2TICK(1000)},
+	{0,							TASK_MS2TICK(0)},
+	{0,							TASK_MS2TICK(0)},
+	{0,							TASK_MS2TICK(6)},
+	{0, 						TASK_MS2TICK(20)}
+};
 
 #define TASK_NUMER_OF_TASKS	(sizeof(TASK_tTaskTbl) / sizeof(TASK_tTaskTbl[0]))
 
@@ -39,14 +48,14 @@ void TASK_vIRQHandler(void)
 
 	for(i=0; i<TASK_NUMER_OF_TASKS; i++)
 	{
-		if(TASK_tTaskTbl[i].uiSliceValue)
+		if(TASK_tTaskRunningInfo[i].uiSliceValue)
 		{
-			TASK_tTaskTbl[i].uiSliceValue--;
+			TASK_tTaskRunningInfo[i].uiSliceValue--;
 
-			if(0 == TASK_tTaskTbl[i].uiSliceValue)
+			if(0 == TASK_tTaskRunningInfo[i].uiSliceValue)
 			{
-				TASK_tTaskTbl[i].ucIsRun = 1u;
-				TASK_tTaskTbl[i].uiSliceValue = TASK_tTaskTbl[i].uiSliceResetValue;
+				TASK_tTaskRunningInfo[i].ucIsRun = 1u;
+				TASK_tTaskRunningInfo[i].uiSliceValue = TASK_tTaskTbl[i].uiSliceResetValue;
 			}
 		}
 	}
@@ -60,14 +69,20 @@ void TASK_vScheduleTasks(void)
 	{
 		//WDT_FEED();
 
-		if(TASK_tTaskTbl[i].ucIsRun || (0==TASK_tTaskTbl[i].uiSliceResetValue))
+		if(TASK_tTaskRunningInfo[i].ucIsRun || (0==TASK_tTaskTbl[i].uiSliceResetValue))
 		{
 			TASK_tTaskTbl[i].pvTaskPointer();
-			TASK_tTaskTbl[i].ucIsRun = 0;
+			TASK_tTaskRunningInfo[i].ucIsRun = 0;
 		}
 	}
 
-	MOT_vTaskHandler();
+	//if (0 == TMR_uiTimer[TMR_U2P_TEST])
+	//{
+	//	TMR_uiTimer[TMR_U2P_TEST] = TMR_TIME_MS2TICKS(10);
+	//	MOT_vTaskHandler();
+
+	//}
+
 }
 
 static void TASK_vUpdateWorkingTime(void)

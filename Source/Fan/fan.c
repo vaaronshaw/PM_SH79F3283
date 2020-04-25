@@ -21,7 +21,7 @@ void FAN_vInit(void)
 
 void MOT_vSetSpeed(TFanSpeedDef tSpeedIndex)
 {
-	switch (FAN_tSpeedToSet)
+	switch (tSpeedIndex)
 	{
 		default:
 		case FAN_SPEED_0:
