@@ -14,6 +14,8 @@
 #include "wdt.h"
 #include "Buzzer/buzzer.h"
 #include "Motor/motor.h"
+#include "Fan/fan.h"
+#include "Light/light.h"
 
 
 
@@ -26,7 +28,9 @@ static TtaskDef code TASK_tTaskTbl[] = {
 	{TASK_MS2TICK(0),			U2P_vDllTaskHandler},
 	{TASK_MS2TICK(0),			U2P_vPLTaskHandler},
 	{TASK_MS2TICK(6),			BUZZ_vTaskHandler},
-	{TASK_MS2TICK(20),			MOT_vTaskHandler}
+	{TASK_MS2TICK(50),			MOT_vTaskHandler},
+	{TASK_MS2TICK(100),			FAN_vTaskHandler},
+	{TASK_MS2TICK(100),			LIG_vTaskHandler}
 };
 
 /**index sequence must match with TASK_tTaskTbl[]*/
@@ -37,7 +41,9 @@ static TaskRunningInfoDef TASK_tTaskRunningInfo[] = {
 	{0,							TASK_MS2TICK(0)},
 	{0,							TASK_MS2TICK(0)},
 	{0,							TASK_MS2TICK(6)},
-	{0, 						TASK_MS2TICK(20)}
+	{0, 						TASK_MS2TICK(50)},
+	{0, 						TASK_MS2TICK(100)},
+	{0, 						TASK_MS2TICK(100)}
 };
 
 #define TASK_NUMER_OF_TASKS	(sizeof(TASK_tTaskTbl) / sizeof(TASK_tTaskTbl[0]))

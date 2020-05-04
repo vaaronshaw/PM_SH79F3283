@@ -67,11 +67,7 @@ void main()
     FAN_vInit();
     MOT_vInit();
 
-
-
     EA = 1;	//!< enable all interrupts
-
-    LIG_SET_OFF();
 
     while(1)
     {

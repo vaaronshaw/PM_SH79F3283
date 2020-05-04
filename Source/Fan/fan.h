@@ -25,6 +25,8 @@
 #define FAN_SET_IO_HIGH(port, pin)	((port) |= (pin))
 #define FAN_SET_IO_LOW(port, pin)	((port) &= ~(pin))
 
+#define FAN_GET_IO_STATE(port, pin) ((port) & (pin))
+
 //#define FAN_RELAY1_ON()		(FAN_RELAY1_PORT |= FAN_RELAY1_PIN)
 //#define FAN_RELAY1_OFF()	(FAN_RELAY1_PORT &= ~FAN_RELAY1_PIN)
 //
@@ -55,11 +57,10 @@ typedef enum {
 
 
 extern void FAN_vInit(void);
-extern void FAN_vSetSpeed(TFanSpeedDef tSpeedIndex);
 
 
-
-
+extern void FAN_vTaskHandler(void);
+extern void FAN_vSetTargetSpeed(TFanSpeedDef tSpeedIndex);
 
 
 

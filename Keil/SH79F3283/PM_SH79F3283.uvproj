@@ -32,10 +32,10 @@
           <SFDFile></SFDFile>
           <bCustSvd>0</bCustSvd>
           <UseEnv>0</UseEnv>
-          <BinPath>C:\Keil_v5\C51\BIN\</BinPath>
+          <BinPath></BinPath>
           <IncludePath></IncludePath>
           <LibPath></LibPath>
-          <RegisterFilePath></RegisterFilePath>
+          <RegisterFilePath>Sinowealth\</RegisterFilePath>
           <DBRegisterFilePath>Sinowealth\</DBRegisterFilePath>
           <TargetStatus>
             <Error>0</Error>
@@ -311,7 +311,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Include;..\..\Source;..\..\Source\Button;..\..\Source\Isr;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source\Display;..\..\Source\Buzzer;..\..\Source\Light;..\..\Source\Motor;..\..\Source\Fan</IncludePath>
+              <IncludePath>..\..\Include;..\..\Source\Buzzer;..\..\Source\Fan;..\..\Source\Isr;..\..\Source\Light;..\..\Source\Motor;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -361,13 +361,8 @@
       </TargetOption>
       <Groups>
         <Group>
-          <GroupName>Include</GroupName>
+          <GroupName>include</GroupName>
           <Files>
-            <File>
-              <FileName>STARTUP.A51</FileName>
-              <FileType>2</FileType>
-              <FilePath>.\STARTUP.A51</FilePath>
-            </File>
             <File>
               <FileName>adc_define.h</FileName>
               <FileType>5</FileType>
@@ -414,6 +409,11 @@
               <FilePath>..\..\Include\SH79F328.h</FilePath>
             </File>
             <File>
+              <FileName>SH79F3283xx.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Include\SH79F3283xx.h</FilePath>
+            </File>
+            <File>
               <FileName>Spi_define.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\Include\Spi_define.h</FilePath>
@@ -438,10 +438,15 @@
               <FileType>5</FileType>
               <FilePath>..\..\Include\Twi_ext.h</FilePath>
             </File>
+            <File>
+              <FileName>STARTUP.A51</FileName>
+              <FileType>2</FileType>
+              <FilePath>.\STARTUP.A51</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>Source</GroupName>
+          <GroupName>source</GroupName>
           <Files>
             <File>
               <FileName>defines.h</FileName>
@@ -484,81 +489,6 @@
               <FilePath>..\..\Source\wdt.h</FilePath>
             </File>
             <File>
-              <FileName>button.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Button\button.c</FilePath>
-            </File>
-            <File>
-              <FileName>button.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\Source\Button\button.h</FilePath>
-            </File>
-            <File>
-              <FileName>interrupt.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Isr\interrupt.c</FilePath>
-            </File>
-            <File>
-              <FileName>system.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Sys\system.c</FilePath>
-            </File>
-            <File>
-              <FileName>SetSysclk.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Sysclk\SetSysclk.c</FilePath>
-            </File>
-            <File>
-              <FileName>Sysclk_Test.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Sysclk\Sysclk_Test.c</FilePath>
-            </File>
-            <File>
-              <FileName>Timer3.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Timer\Timer3.c</FilePath>
-            </File>
-            <File>
-              <FileName>Timer4.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Timer\Timer4.c</FilePath>
-            </File>
-            <File>
-              <FileName>Timer5.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Timer\Timer5.c</FilePath>
-            </File>
-            <File>
-              <FileName>Uart2PM.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Uart\Uart2PM.c</FilePath>
-            </File>
-            <File>
-              <FileName>Uart2PM.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\Source\Uart\Uart2PM.h</FilePath>
-            </File>
-            <File>
-              <FileName>display.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Display\display.c</FilePath>
-            </File>
-            <File>
-              <FileName>display.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\Source\Display\display.h</FilePath>
-            </File>
-            <File>
-              <FileName>ringbuffer.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Source\Uart\ringbuffer.c</FilePath>
-            </File>
-            <File>
-              <FileName>ringbuffer.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\..\Source\Uart\ringbuffer.h</FilePath>
-            </File>
-            <File>
               <FileName>buzzer.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Source\Buzzer\buzzer.c</FilePath>
@@ -567,6 +497,21 @@
               <FileName>buzzer.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\Source\Buzzer\buzzer.h</FilePath>
+            </File>
+            <File>
+              <FileName>fan.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Fan\fan.c</FilePath>
+            </File>
+            <File>
+              <FileName>fan.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\Fan\fan.h</FilePath>
+            </File>
+            <File>
+              <FileName>interrupt.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Isr\interrupt.c</FilePath>
             </File>
             <File>
               <FileName>light.c</FileName>
@@ -589,14 +534,49 @@
               <FilePath>..\..\Source\Motor\motor.h</FilePath>
             </File>
             <File>
-              <FileName>fan.c</FileName>
+              <FileName>system.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\Source\Fan\fan.c</FilePath>
+              <FilePath>..\..\Source\Sys\system.c</FilePath>
             </File>
             <File>
-              <FileName>fan.h</FileName>
+              <FileName>SetSysclk.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Sysclk\SetSysclk.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer3.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Timer\Timer3.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer4.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Timer\Timer4.c</FilePath>
+            </File>
+            <File>
+              <FileName>Timer5.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Timer\Timer5.c</FilePath>
+            </File>
+            <File>
+              <FileName>ringbuffer.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Uart\ringbuffer.c</FilePath>
+            </File>
+            <File>
+              <FileName>ringbuffer.h</FileName>
               <FileType>5</FileType>
-              <FilePath>..\..\Source\Fan\fan.h</FilePath>
+              <FilePath>..\..\Source\Uart\ringbuffer.h</FilePath>
+            </File>
+            <File>
+              <FileName>Uart2PM.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Uart\Uart2PM.c</FilePath>
+            </File>
+            <File>
+              <FileName>Uart2PM.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\Uart\Uart2PM.h</FilePath>
             </File>
           </Files>
         </Group>

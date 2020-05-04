@@ -21,6 +21,7 @@
 #define MOT_SLEEP2_PORT		P3
 #define MOT_ENABLE2_PORT	P3
 #define MOT_SENSE_I2_PORT	P3
+
 #define MOT_SWITCH_PORT		P1
 
 
@@ -32,21 +33,24 @@
 #define MOT_SLEEP2_PIN		0x20
 #define MOT_ENABLE2_PIN		0x40
 #define MOT_SENSE_I2_PIN	0x80	//!< P3.7
+
 #define MOT_SWITCH_PIN		0x04	//!< P1.2
 
 
-#define MOT_SET_IO_HIGH(port, pin)	((port) |= (pin))
-#define MOT_SET_IO_LOW(port, pin)	((port) &= ~(pin))
-#define MOT_GET_IO_STATE(port, pin)	((port) & (pin))
-
 #define MOT_AD_SAMPLE_TIMES 5
+
+#define MOT_BLOCK_AD_VALUE_MAX		200		
+
+typedef enum {
+	MOT_STATE_CLOSE = 0,
+	MOT_STATE_OPEN
+}TMotorStateDef;
 
 
 typedef enum {
 	MOT_TASK_INIT = 0,
 	MOT_TASK_IDLE,
-	MOT_TASK_CLOSE,
-	MOT_TASK_OPEN
+	MOT_TASK_RUNNING
 }TMotorTaskDef;
 
 typedef enum {

@@ -46,10 +46,15 @@ typedef unsigned char       BOOL;   ///< Standard library type
 #endif // !NULL
 
 
+#define SET_IO_HIGH(port, pin)		((port) |= (pin))
+#define SET_IO_LOW(port, pin)		((port) &= ~(pin))
+#define GET_IO_STATE(port, pin)		((port) & (pin))
 
 
-
-
+enum {
+	SET_FAIL = 0,
+	SET_OK
+};
 
 
 #define __LITTLE_ENDIAN_ADAPTATION	1 //notice this

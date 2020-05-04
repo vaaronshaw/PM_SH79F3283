@@ -13,15 +13,20 @@
 
 
 
+#define LIG_IO_PORT		P1
+#define LIG_IO_PIN		0x02
 
 
-#define LIG_SET_ON()	(P1 |= 0x02)
-#define LIG_SET_OFF()	(P1 &= ~0x02)
+typedef enum {
+	LIG_STATE_OFF = 0,
+	LIG_STATE_ON
+}TLigStateDef;
+
 
 
 extern void LIG_vInit(void);
-
-
+extern void LIG_vTaskHandler(void);
+extern void LIG_vSetTargetState(TLigStateDef tState);
 
 
 
