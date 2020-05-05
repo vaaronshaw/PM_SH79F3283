@@ -2,9 +2,16 @@
 #define _UART_2_PM_H
 
 #include "defines.h"
+#include "cpu.h"
+#if (CPU_TYPE==CPU_SH79F3283)
+#include "SH79F3283.h"
+#elif (CPU_TYPE==CPU_SH79F328)
+#include "SH79F328.h"
+#else
+#include "SH79F328.h"
+#endif
 
-
-/**Basic configuration, please adjust too meet project's needs*/
+/**Basic configuration, please adjust belows to meet project's needs*/
 #define U2P_NO_ACK_RETRY_TIMES			3
 #define U2P_NO_ACK_TIME					200	//!< ms
 #define U2P_BYTE_INTERVAL_TIME			20	//!< ms
@@ -77,12 +84,12 @@ typedef enum {
 enum {
 	U2P_PIID_MACHINE_STATE = 0,		//!< Machine State
 	U2P_PIID_WIND_VOLUME,			//!< wind volume
-	//U2P_PIID_LIGHT,					//!< light 
+	U2P_PIID_LIGHT,					//!< light 
 	//U2P_PIID_WIND_PRESSURE,			//!< wind pressure
 	//U2P_PIID_TURBO_STATE,			//!< Turbo State
 	//U2P_PIID_AIR_CONTROL,			//!< air control
 	//U2P_PIID_AIR_QUALITY,			//!< air quality
-	U2P_PIID_DELAY_TIME,			//!< delay time (s)
+	//U2P_PIID_DELAY_TIME,			//!< delay time (s)
 	//U2P_PIID_DELAY_SPEED,			//!< delay speed
 	//U2P_PIID_BOOST_TIME,			//!< boost time
 	//U2P_PIID_POWER_FEEDBACK,		//!< power feedback
@@ -95,7 +102,7 @@ enum {
 	//U2P_PIID_MOTOR_TEMP,			//!< motor temp
 	//U2P_PIID_DETECTION_TEMP1,		//!< detection temp1
 	//U2P_PIID_DETECTION_TEMP2,		//!< detection temp2
-	//U2P_PIID_BUZZER_CTRL,			//!< buzzer control
+	U2P_PIID_BUZZER_CTRL,			//!< buzzer control
 	//U2P_PIID_VOICE_CTRL,			//!< voice control
 	//U2P_PIID_IR_CTRL,				//!< IR control
 	//U2P_PIID_INTERLINK_CTRL,		//!< interlink control
@@ -118,7 +125,7 @@ extern void U2P_vPLTaskHandler(void);
 extern void U2P_vTransmitMessage(uchar ucMsgID);
 
 
-
+extern void U2P_vSetPropertyQueryFlag(uchar ucPIID);
 
 
 

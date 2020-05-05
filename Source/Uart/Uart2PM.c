@@ -1,17 +1,10 @@
 #include "Uart2PM.h"
 #include "ringbuffer.h"
 #include "api_ext.h"
-#include "cpu.h"
-#if (CPU_TYPE==CPU_SH79F3283)
-#include "SH79F3283.h"
-#elif (CPU_TYPE==CPU_SH79F328)
-#include "SH79F328.h"
-#else
-#include "SH79F328.h"
-#endif
 #include "sw_timer.h"
-
-
+#include "buzzer.h"
+#include "light.h"
+#include "fan.h"
 
 
 static ring_buffer_t U2P_tRingBuffer;
@@ -30,7 +23,7 @@ static uchar U2P_ucCrc = 0;
 static uchar U2P_ucMsgSeqValue = 0;
 static uchar U2P_ucMsgSeqValueLast = 0;
 
-static uchar U2P_ucTransAckFlag = 0;
+static uchar U2P_ucTransAckFirst = 0;
 static uchar U2P_ucRetryCounter = 0;
 //static uchar U2P_ucMessageIndex = 0;
 /**static functions**/
@@ -66,11 +59,16 @@ static void U2P_vPropertyUpload(Tu2pMessage* tMsgObject);
 /**Property Get Functions*/
 static void U2P_vGetMachineState(Tu2pMessage* tMsgObject);
 static void U2P_vGetWindVolume(Tu2pMessage* tMsgObject);
-static void U2P_vGetDelayTime(Tu2pMessage* tMsgObject);
+//static void U2P_vGetDelayTime(Tu2pMessage* tMsgObject);
+static void U2P_vGetLightStatus(Tu2pMessage* tMsgObject);
+
 /**Property Set Functions*/
 static void U2P_vSetMachineState(Tu2pMessage* tMsgObject);
 static void U2P_vSetWindVolume(Tu2pMessage* tMsgObject);
-static void U2P_vSetDelayTime(Tu2pMessage* tMsgObject);
+//static void U2P_vSetDelayTime(Tu2pMessage* tMsgObject);
+static void U2P_vSetLightStatus(Tu2pMessage* tMsgObject);
+static void U2P_vSetBuzzer(Tu2pMessage* tMsgObject);
+
 
 static void U2P_vTransmitAck(void);
 
@@ -91,22 +89,24 @@ static const Tu2pMessageObject U2P_tTransmitMsgTbl[] = {
     {U2P_MSG_ID_PROD_INFO_SYNC,     U2P_ACK,                    U2P_MSG_DATALEN_PROD_INFO_SYNC,     U2P_vTransProdInfoSync},
     {U2P_MSG_ID_HEART_BEAT,         U2P_NO_ACK,                 U2P_MSG_DATALEN_HEART_BEAT,         U2P_vTransHeartbeat},
     {U2P_MSG_ID_STATUS_GET,         U2P_ACK,                    U2P_MSG_DATALEN_STATUS_GET,         U2P_vTransStatusGet},
-    {U2P_MSG_ID_STATUS_SET,         U2P_ACK,                    U2P_MSG_DATALEN_STATUS_SET,         U2P_vTransStatusSet}
+    //{U2P_MSG_ID_STATUS_SET,         U2P_ACK,                    U2P_MSG_DATALEN_STATUS_SET,         U2P_vTransStatusSet}
 };
 
-#define U2P_RECEPTION_MSG_TBL_SIZE    sizeof(U2P_tReceiveMsgTbl)/sizeof(U2P_tReceiveMsgTbl[0])
-#define U2P_TRANSMIT_MSG_TBL_SIZE    sizeof(U2P_tTransmitMsgTbl)/sizeof(U2P_tTransmitMsgTbl[0])
+#define U2P_RECEPTION_MSG_TBL_SIZE      sizeof(U2P_tReceiveMsgTbl) / sizeof(U2P_tReceiveMsgTbl[0])
+#define U2P_TRANSMIT_MSG_TBL_SIZE       sizeof(U2P_tTransmitMsgTbl) / sizeof(U2P_tTransmitMsgTbl[0])
+
+
 /**Propertys Configuration Table*/
 static const TpropertyConfig U2P_tPropertyTable[] = {
     /**PIID,            PIID value length,          Property Get Funtion,           Property Set Function*/
-    {1,                 1,                          U2P_vGetMachineState,           U2P_vSetMachineState},     //!< Machine State
-    {2,                 1,                          U2P_vGetWindVolume,             U2P_vSetWindVolume},     //!< wind volume
-    //{3,                 1},     //!< light 
+    {1,                 1,                          U2P_vGetMachineState,           U2P_vSetMachineState},      //!< Machine State
+    {2,                 1,                          U2P_vGetWindVolume,             U2P_vSetWindVolume},        //!< wind volume
+    {3,                 1,                          U2P_vGetLightStatus,            U2P_vSetLightStatus},     //!< light 
     //{4,                 1},     //!< wind pressure
     //{5,                 1},     //!< Turbo State
     //{6,                 1},     //!< air control
     //{7,                 1},     //!< air quality
-    {8,                 2,                          U2P_vGetDelayTime,              U2P_vSetDelayTime},     //!< delay time (s)
+    //{8,                 2,                          U2P_vGetDelayTime,              U2P_vSetDelayTime},     //!< delay time (s)
     //{9,                 1},     //!< delay speed
     //{10,                1},     //!< boost time
     //{11,                1},     //!< power feedback
@@ -119,7 +119,7 @@ static const TpropertyConfig U2P_tPropertyTable[] = {
     //{18,                1},     //!< motor temp
     //{19,                2},     //!< detection temp1
     //{20,                2},     //!< detection temp2
-    //{21,                1},     //!< buzzer control
+    {21,                1,                          NULL,                           U2P_vSetBuzzer},     //!< buzzer control
     //{22,                1},     //!< voice control
     //{23,                1},     //!< IR control
     //{24,                1},     //!< interlink control
@@ -127,9 +127,10 @@ static const TpropertyConfig U2P_tPropertyTable[] = {
     //{201,               2},     //!< key value
     //{202,               2},     //!< indicator light control value
     //{203,               1},     //!< gesture control
-    //{0xFF,              1},     //!< error
+    {0xFF,              1},     //!< error
 };
 
+static uchar U2P_ucGetPropertyIndex(uchar ucPIID);
 
 /**reception functions*/
 static void U2P_vRecvAck(Tu2pMessage* tMsgObject)
@@ -171,9 +172,48 @@ static void U2P_vRecvStatusGet(Tu2pMessage* tMsgObject)
     }
 }
 
+static uchar U2P_ucGetPropertyIndex(uchar ucPIID)
+{
+    uchar i = 0;
+
+    for (i=0; i<sizeof(U2P_tPropertyTable)/sizeof(U2P_tPropertyTable[0]); i++)
+    {
+        if (ucPIID == U2P_tPropertyTable[i].ucPIID)
+        {
+            return i;
+        }
+    }
+
+    return 0xFF;    //!< not found
+}
+
 static void U2P_vRecvStatusSet(Tu2pMessage* tMsgObject)
 {
     /**set properties' status*/
+    uchar ucIndex = 0;
+    uchar ucPIID = 0;
+    uchar ucPiidValueLen = 0;
+    uchar ucTotalCount = tMsgObject->tMsgHeader.ucDataLen;  //!< init value
+
+    tMsgObject->tMsgHeader.ucDataLen = 0;   //!< reset value
+
+    while (tMsgObject->tMsgHeader.ucDataLen < ucTotalCount)
+    {
+        ucPIID = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++];
+        ucPiidValueLen = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++];
+
+        ucIndex = U2P_ucGetPropertyIndex(ucPIID);
+
+        if (ucIndex != 0xFF)
+        {
+            if (U2P_tPropertyTable[ucIndex].pPropSetFunc != NULL)
+            {
+                U2P_tPropertyTable[ucIndex].pPropSetFunc(tMsgObject);
+            }
+        }
+
+        tMsgObject->tMsgHeader.ucDataLen += ucPiidValueLen; //!< add data length
+    }
 }
 
 
@@ -185,10 +225,10 @@ static void U2P_vTransAck(Tu2pMessage* tMsgObject)
 
 static void U2P_vTransSWInfoSync(Tu2pMessage* tMsgObject)
 {
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x11;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x22;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x33;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x44;
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x11;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x22;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x33;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x44;  //!< demo test
 }
 
 static void U2P_vTransProdInfoSync(Tu2pMessage* tMsgObject)
@@ -197,16 +237,16 @@ static void U2P_vTransProdInfoSync(Tu2pMessage* tMsgObject)
 #define PRODUCT_SN_LEN       4
 
     tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = PRODUCT_TYPE_LEN;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x01;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x02;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x03;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x04;
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x01;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x02;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x03;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x04;  //!< demo test
 
     tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = PRODUCT_SN_LEN;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x01;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x02;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x03;
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x04;
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x01;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x02;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x03;  //!< demo test
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x04;  //!< demo test
 }
 
 static void U2P_vTransHeartbeat(Tu2pMessage* tMsgObject)
@@ -216,11 +256,8 @@ static void U2P_vTransHeartbeat(Tu2pMessage* tMsgObject)
 
 static void U2P_vTransStatusGet(Tu2pMessage* tMsgObject)
 {
-    U2P_ulPropertyQueryFlag = 0x07; //!< test
-
-    DEF_SET(U2P_ulPropertyQueryFlag, 1 << U2P_PIID_MACHINE_STATE);
-    DEF_SET(U2P_ulPropertyQueryFlag, 1 << U2P_PIID_WIND_VOLUME);
-    DEF_SET(U2P_ulPropertyQueryFlag, 1 << U2P_PIID_DELAY_TIME);
+    DEF_SET(U2P_ulPropertyQueryFlag, 1 << U2P_PIID_MACHINE_STATE);  //!< demo test
+    DEF_SET(U2P_ulPropertyQueryFlag, 1 << U2P_PIID_WIND_VOLUME);    //!< demo test
 
     if (0 == U2P_ulPropertyQueryFlag)
     {
@@ -233,6 +270,13 @@ static void U2P_vTransStatusGet(Tu2pMessage* tMsgObject)
         U2P_vPropertyUpload(tMsgObject);
     }
 }
+
+void U2P_vSetPropertyQueryFlag(uchar ucPIID)
+{
+    DEF_SET(U2P_ulPropertyQueryFlag, 1 << ucPIID);
+}
+
+
 
 static void U2P_vTransStatusSet(Tu2pMessage* tMsgObject)
 {
@@ -295,18 +339,58 @@ static void U2P_vGetDelayTime(Tu2pMessage* tMsgObject)
     tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x22;      //!< demo
 }
 
+static void U2P_vGetLightStatus(Tu2pMessage* tMsgObject)
+{
+
+}
+
+
 static void U2P_vSetMachineState(Tu2pMessage* tMsgObject)
 {
     /**set property value*/
 }
 static void U2P_vSetWindVolume(Tu2pMessage* tMsgObject)
 {
+    uchar ucValue = 0;
 
+    ucValue = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen];
+
+    /**check sequence validation and value*/
+    if (!U2P_bIsSameSeqValue() && (ucValue <= FAN_SPEED_4))
+    {
+        FAN_vSetTargetSpeed((TFanSpeedDef)ucValue);
+    }
 }
 
 static void U2P_vSetDelayTime(Tu2pMessage* tMsgObject)
 {
 
+}
+
+static void U2P_vSetLightStatus(Tu2pMessage* tMsgObject)
+{
+    uchar ucValue = 0;
+
+    ucValue = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen];
+
+    /**check sequence validation and value*/
+    if (!U2P_bIsSameSeqValue() && (ucValue <= LIG_STATE_ON))
+    {
+        LIG_vSetTargetState((TLigStateDef)ucValue);
+    }
+}
+
+static void U2P_vSetBuzzer(Tu2pMessage* tMsgObject)
+{
+    uchar ucValue = 0;
+
+    ucValue = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen];
+
+    /**check sequence validation and value*/
+    if (!U2P_bIsSameSeqValue() && (ucValue<BUZZ_RHYTHM_NUM))
+    {
+        BUZZ_vSetBuzzAlarm((TBuzzerRhythmIndex)ucValue);
+    }
 }
 /**
  Initialisation of the crc calculation (resets the present value of the crc). The initialisation
@@ -449,9 +533,9 @@ void U2P_vDllTaskHandler(void)
                 /**timeout, return to idle state*/
                 U2P_vEnterIdleState();
 
-                if (U2P_ucTransAckFlag)
+                if (U2P_ucTransAckFirst)
                 {
-                    U2P_ucTransAckFlag = 0;
+                    U2P_ucTransAckFirst = 0;
                     TMR_uiTimer[TMR_U2P_TRANSMIT_TIME_OUT] = TMR_TIME_MS2TICKS(U2P_BYTE_INTERVAL_TIME); //!< delay 20ms to transmit next message
                 }
             }
@@ -580,7 +664,7 @@ void U2P_vPLTaskHandler(void)
     U2P_vCheckReceptionTask();
 
     /**transmit ack first*/
-    if (U2P_ucTransAckFlag)
+    if (U2P_ucTransAckFirst)
     {
         if (U2P_TASK_IDLE == U2P_tTaskState)	//!< Rx is not ongoing
         {
@@ -684,7 +768,7 @@ static void U2P_vTransmitAck(void)
     U2P_tTransmitMsgTbl[0].pServiceFunc(&U2P_tAckToSend);
 
     TMR_uiTimer[TMR_U2P_MSG_NO_ACK_TIMEOUT] = 0;
-    U2P_ucTransAckFlag = 1;
+    U2P_ucTransAckFirst = 1;
 }
 
 void U2P_vInit(void)
@@ -741,9 +825,9 @@ void U2P_vTxEventHandler(void)
             *U2P_pucNextCharToWrite = U2P_ucCrc;
             SBUF = *U2P_pucNextCharToWrite;
 
-            if (U2P_ucTransAckFlag)
+            if (U2P_ucTransAckFirst)
             {
-                U2P_ucTransAckFlag = 0;
+                U2P_ucTransAckFirst = 0;
                 TMR_uiTimer[TMR_U2P_MSG_NO_ACK_TIMEOUT] = TMR_TIME_MS2TICKS(U2P_BYTE_INTERVAL_TIME);
             }
 

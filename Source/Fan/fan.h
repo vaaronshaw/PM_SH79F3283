@@ -11,7 +11,7 @@
 #include "SH79F328.h"
 #endif
 
-
+/**io configuration for fan control*/
 #define FAN_RELAY1_PORT		P2
 #define FAN_RELAY2_PORT		P2
 #define FAN_RELAY3_PORT		P1
@@ -22,25 +22,8 @@
 #define FAN_RELAY3_PIN		0x10
 #define FAN_RELAY4_PIN		0x08
 
-#define FAN_SET_IO_HIGH(port, pin)	((port) |= (pin))
-#define FAN_SET_IO_LOW(port, pin)	((port) &= ~(pin))
 
-#define FAN_GET_IO_STATE(port, pin) ((port) & (pin))
-
-//#define FAN_RELAY1_ON()		(FAN_RELAY1_PORT |= FAN_RELAY1_PIN)
-//#define FAN_RELAY1_OFF()	(FAN_RELAY1_PORT &= ~FAN_RELAY1_PIN)
-//
-//#define FAN_RELAY2_ON()		(FAN_RELAY2_PORT |= FAN_RELAY2_PIN)
-//#define FAN_RELAY2_OFF()	(FAN_RELAY2_PORT &= ~FAN_RELAY2_PIN)
-//
-//#define FAN_RELAY3_ON()		(FAN_RELAY3_PORT |= FAN_RELAY3_PIN)
-//#define FAN_RELAY3_OFF()	(FAN_RELAY3_PORT &= ~FAN_RELAY3_PIN)
-//
-//#define FAN_RELAY4_ON()		(FAN_RELAY4_PORT |= FAN_RELAY4_PIN)
-//#define FAN_RELAY4_OFF()	(FAN_RELAY4_PORT &= ~FAN_RELAY4_PIN)
-
-
-
+#define FAN_RUNNING_TIME_MAX	6*3600	//!< 4 hours
 
 typedef enum {
 	FAN_SPEED_0 = 0,
@@ -61,7 +44,7 @@ extern void FAN_vInit(void);
 
 extern void FAN_vTaskHandler(void);
 extern void FAN_vSetTargetSpeed(TFanSpeedDef tSpeedIndex);
-
+extern void FAN_vUpdateWorkingTime(void);
 
 
 

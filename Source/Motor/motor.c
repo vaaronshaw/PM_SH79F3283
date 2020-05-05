@@ -99,9 +99,9 @@ static void MOT_vAdSampleTask(TMotorIndexDef tMotorIndex)
 	Delay();
 
 	ADCON |= 0x01;   //!< ADC GO
-	while ((ADCON & 0x01) || (ADCON & 0x40))	//!< check go/done or ADCIF flag
+	while ((ADCON & 0x01))	//!< check go/done 
 	{
-		ADCON &= ~0x40;	//!< clear flag
+		/**wait*/
 	}
 
 	//get result

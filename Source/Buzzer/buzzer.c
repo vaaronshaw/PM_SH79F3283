@@ -28,17 +28,23 @@ static const TRhythmConfig BUZZ_tInvalidRhythm[] = {
 	{BUZZ_TONE_INDEX_1,		BUZZ_MS2TICK(130),	BUZZ_MS2TICK(48)}
 };
 
+static const TRhythmConfig BUZZ_tFaultRhythm[] = {
+	{BUZZ_TONE_INDEX_1,		BUZZ_MS2TICK(130),	BUZZ_MS2TICK(48)},
+	{BUZZ_TONE_INDEX_1,		BUZZ_MS2TICK(130),	BUZZ_MS2TICK(48)},
+	{BUZZ_TONE_INDEX_1,		BUZZ_MS2TICK(130),	BUZZ_MS2TICK(48)}
+};
 
 typedef struct {
 	const TRhythmConfig* tRhythmTable;
 	uchar ucTableSize;
 }TRhythmTable;
 
-static const TRhythmTable BUZZ_tRhythmTable[BUZZ_RHYTHM_NUM] = {
-	{BUZZ_tPowerOnRhythm,	sizeof(BUZZ_tPowerOnRhythm) / sizeof(BUZZ_tPowerOnRhythm[0])},
+static const TRhythmTable BUZZ_tRhythmTable[] = {
 	{BUZZ_tPowerOffRhythm,	sizeof(BUZZ_tPowerOffRhythm) / sizeof(BUZZ_tPowerOffRhythm[0])},
 	{BUZZ_tSelectRhythm,	sizeof(BUZZ_tSelectRhythm) / sizeof(BUZZ_tSelectRhythm[0])},
-	{BUZZ_tInvalidRhythm,	sizeof(BUZZ_tInvalidRhythm) / sizeof(BUZZ_tInvalidRhythm[0])}
+	{BUZZ_tInvalidRhythm,	sizeof(BUZZ_tInvalidRhythm) / sizeof(BUZZ_tInvalidRhythm[0])},
+	{BUZZ_tFaultRhythm,		sizeof(BUZZ_tFaultRhythm) / sizeof(BUZZ_tFaultRhythm[0])},			//!< fault
+	{BUZZ_tPowerOnRhythm,	sizeof(BUZZ_tPowerOnRhythm) / sizeof(BUZZ_tPowerOnRhythm[0])}
 };
 
 /*~E*/
