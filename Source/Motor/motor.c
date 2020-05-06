@@ -124,8 +124,10 @@ static void MOT_vSubTaskHandler(TMotorIndexDef tMotorIndex)
 		case MOT_TASK_INIT:
 		{
 			MOT_tTaskState[tMotorIndex] = MOT_TASK_IDLE;
+			(void)MOT_ucEnterIdleState(tMotorIndex);
+
 			MOT_tStateToSet[tMotorIndex] = MOT_STATE_CLOSE;		//!< test
-			MOT_tStateOfCurrent[tMotorIndex] = MOT_STATE_OPEN;	//!< test
+			MOT_tStateOfCurrent[tMotorIndex] = MOT_STATE_CLOSE;	//!< test
 
 			break;
 		}

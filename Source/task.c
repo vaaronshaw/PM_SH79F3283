@@ -85,8 +85,10 @@ void TASK_vScheduleTasks(void)
 
 static void TASK_vUpdateWorkingTime(void)
 {
-	U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
-	BUZZ_vSetBuzzAlarm(BUZZ_RHYTHM_POWER_ON);
+	U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);	//!< test
+	BUZZ_vSetBuzzAlarm(BUZZ_RHYTHM_POWER_ON);	//!< test
+
 	FAN_vUpdateWorkingTime();
+	LIG_vUpdateWorkingTime();
 }
 

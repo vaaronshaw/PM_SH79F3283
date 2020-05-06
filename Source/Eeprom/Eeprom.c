@@ -21,14 +21,14 @@ UCHAR EEPromByteRead(UCHAR nAddrH,UCHAR nAddrL)  				// ×Ö½Ú¶Á,ºÄÊ±2¸öÊ±ÖÓ
 	UINT16 nInt ;
 	UCHAR code * nAddr ;
 
-	FLASHCON = TRUE ;
+	FLASHCON = TRUE ;	//!< access to EEPROM
 	nInt = nAddrH ;
 	nInt <<= 8 ;
 	nInt += nAddrL ;
 	nAddr = nInt ;
 
 	nTemp = * nAddr ;
-	FLASHCON = FALSE ;
+	FLASHCON = FALSE ;	//!< access to Main Block
 
 	return (nTemp) ;
 }
@@ -56,11 +56,11 @@ void EEPromByteProgram(UCHAR nAddrH,UCHAR nAddrL, UCHAR nData)  // ×Ö½Ú±à³Ì£¬Èç¹
 	IB_OFFSET = nAddrL ;
 	IB_DATA = nData ;
 
-	IB_CON1	 = 0x6E ;
-	IB_CON2	 = 0x05 ;
-	IB_CON3	 = 0x0A ;
-	IB_CON4	 = 0x09 ;
-	IB_CON5	 = 0x06 ;
+	IB_CON1	 = 0x6E ;	//!< program
+	IB_CON2	 = 0x05 ;	//!< must be this value, if not program will be terminated
+	IB_CON3	 = 0x0A ;	//!< must be this value, if not program will be terminated
+	IB_CON4	 = 0x09 ;	//!< must be this value, if not program will be terminated
+	IB_CON5	 = 0x06 ;	//!< must be this value, if not program will be terminated
 	_nop_() ;				
 	_nop_() ;
 	_nop_() ;
@@ -83,19 +83,19 @@ void EEPromByteProgram(UCHAR nAddrH,UCHAR nAddrL, UCHAR nData)  // ×Ö½Ú±à³Ì£¬Èç¹
  *****************************************************************************************************/ 
 void EEPromSectorErase(UCHAR nAddrH)// ÉÈÇø²Á³ý£¬Èç¹ûÏµÍ³Ê±ÖÓ=8M£¬ºÄÊ±28000 = 0x6d60 ¸öÊ±ÖÓ 
 {											// ×ÜÓÃÊ±21ms,21000us/0.75 = 28000
-	FLASHCON = TRUE ;
+	FLASHCON = TRUE ;	//!< access to EEPROM
 	
 	XPAGE = nAddrH ;			 			//0x00¿ªÊ¼
 
-	IB_CON1	 = 0xE6 ;	
-	IB_CON2	 = 0x05 ;
-	IB_CON3	 = 0x0A ;
-	IB_CON4	 = 0x09 ;
-	IB_CON5	 = 0x06 ;
+	IB_CON1	 = 0xE6 ;	//!< sector erase
+	IB_CON2	 = 0x05 ;	//!< must be this value, if not program will be terminated
+	IB_CON3	 = 0x0A ;	//!< must be this value, if not program will be terminated
+	IB_CON4	 = 0x09 ;	//!< must be this value, if not program will be terminated
+	IB_CON5	 = 0x06 ;	//!< must be this value, if not program will be terminated
 	_nop_() ;				
 	_nop_() ;
 	_nop_() ;
 	_nop_() ;	
 
-	FLASHCON = FALSE ;
+	FLASHCON = FALSE;	//!< access to Main Block
 }

@@ -4,7 +4,7 @@ static TLigStateDef LIG_tStateToSet = (TLigStateDef)0;
 static TLigStateDef LIG_tStateOfCurrent = (TLigStateDef)0;
 
 static uchar LIG_ucSetState(TLigStateDef tState);
-
+static ulong LIG_ulLightOnTime = 0;
 
 
 
@@ -65,4 +65,16 @@ void LIG_vTaskHandler(void)
 void LIG_vSetTargetState(TLigStateDef tState)
 {
 	LIG_tStateToSet = tState;
+}
+
+void LIG_vUpdateWorkingTime(void)
+{
+	if (LIG_STATE_ON == LIG_tStateOfCurrent)
+	{
+		LIG_ulLightOnTime++;
+	}
+	else
+	{
+		LIG_ulLightOnTime = 0;
+	}
 }

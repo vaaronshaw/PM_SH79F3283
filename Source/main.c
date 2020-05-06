@@ -32,6 +32,7 @@
 #include "Light/light.h"
 #include "Fan/fan.h"
 #include "Motor/motor.h"
+#include "Eeprom/eeprom_user.h"
 /****************************Global Variables Start*************************************************/
  
 /****************************Global Variables End**************************************************/
@@ -52,15 +53,12 @@
  *  Others:                        
  *****************************************************************************************************/
 
-
 void main()
 {
     EA = 0;	
     SetClk();	    //!< sysclk init
     init_timer3();  //!< timer init as systick
     U2P_vInit();    //!< uart init 
-    //BTN_vTouchInit();
-    //DIS_vInit();
     WDT_vInit();
     BUZZ_vInit();
     LIG_vInit();
@@ -68,6 +66,10 @@ void main()
     MOT_vInit();
 
     EA = 1;	//!< enable all interrupts
+
+    //EEP_vSectorErase(EEP_SECTOR_0);     //!< demo test
+    //EEP_vProgramBytes(EEP_SECTOR_0, EEP_USER_DATA_ADDR, ucData, 10);   //!< demo test
+    //EEP_vReadBytes(EEP_SECTOR_0, 0x15, ucRead, 5);  //!< demo test
 
     while(1)
     {

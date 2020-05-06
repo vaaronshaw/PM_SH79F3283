@@ -5,7 +5,7 @@
 #include "buzzer.h"
 #include "light.h"
 #include "fan.h"
-
+#include "hood.h"
 
 static ring_buffer_t U2P_tRingBuffer;
 static Tu2pMessage U2P_tMessageToSend;
@@ -347,7 +347,15 @@ static void U2P_vGetLightStatus(Tu2pMessage* tMsgObject)
 
 static void U2P_vSetMachineState(Tu2pMessage* tMsgObject)
 {
-    /**set property value*/
+    uchar ucValue = 0;
+
+    ucValue = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen];
+
+    /**check sequence validation and value*/
+    if (!U2P_bIsSameSeqValue() && (ucValue <= HOOD_STATE_FACTORY_MODE))
+    {
+        HOOD_vSetWorkingState((THoodStateDef)ucValue);
+    }
 }
 static void U2P_vSetWindVolume(Tu2pMessage* tMsgObject)
 {

@@ -11,7 +11,7 @@
 
 void Delay()
 {
-	UCHAR i=0x0a;
+	UCHAR i=0x0A;
 	while(i--);
 }
 

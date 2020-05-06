@@ -311,7 +311,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Include;..\..\Source\Buzzer;..\..\Source\Fan;..\..\Source\Isr;..\..\Source\Light;..\..\Source\Motor;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source</IncludePath>
+              <IncludePath>..\..\Include;..\..\Source\Buzzer;..\..\Source\Fan;..\..\Source\Isr;..\..\Source\Light;..\..\Source\Motor;..\..\Source\Sys;..\..\Source\Sysclk;..\..\Source\Timer;..\..\Source\Uart;..\..\Source;..\..\Source\Hood;..\..\Source\Eeprom</IncludePath>
             </VariousControls>
           </C51>
           <Ax51>
@@ -577,6 +577,26 @@
               <FileName>Uart2PM.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\..\Source\Uart\Uart2PM.h</FilePath>
+            </File>
+            <File>
+              <FileName>hood.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Hood\hood.c</FilePath>
+            </File>
+            <File>
+              <FileName>hood.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\Hood\hood.h</FilePath>
+            </File>
+            <File>
+              <FileName>eeprom_user.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Source\Eeprom\eeprom_user.c</FilePath>
+            </File>
+            <File>
+              <FileName>eeprom_user.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\..\Source\Eeprom\eeprom_user.h</FilePath>
             </File>
           </Files>
         </Group>
