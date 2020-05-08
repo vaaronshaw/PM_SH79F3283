@@ -27,6 +27,8 @@ typedef enum {
 extern void LIG_vInit(void);
 extern void LIG_vTaskHandler(void);
 extern void LIG_vSetTargetState(TLigStateDef tState);
+extern TLigStateDef LIG_tGetLightStatus(void);
+
 extern void LIG_vUpdateWorkingTime(void);
 
 

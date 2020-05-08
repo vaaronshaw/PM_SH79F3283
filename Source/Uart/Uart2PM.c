@@ -6,6 +6,12 @@
 #include "light.h"
 #include "fan.h"
 #include "hood.h"
+#include "motor.h"
+
+
+
+
+
 
 static ring_buffer_t U2P_tRingBuffer;
 static Tu2pMessage U2P_tMessageToSend;
@@ -61,6 +67,10 @@ static void U2P_vGetMachineState(Tu2pMessage* tMsgObject);
 static void U2P_vGetWindVolume(Tu2pMessage* tMsgObject);
 //static void U2P_vGetDelayTime(Tu2pMessage* tMsgObject);
 static void U2P_vGetLightStatus(Tu2pMessage* tMsgObject);
+static void U2P_vGetDoorCtrlState(Tu2pMessage* tMsgObject);
+static void U2P_vGetDoorStatus(Tu2pMessage* tMsgObject);
+static void U2P_vGetDoorCtrlState2(Tu2pMessage* tMsgObject);
+static void U2P_vGetDoorStatus2(Tu2pMessage* tMsgObject);
 
 /**Property Set Functions*/
 static void U2P_vSetMachineState(Tu2pMessage* tMsgObject);
@@ -68,7 +78,8 @@ static void U2P_vSetWindVolume(Tu2pMessage* tMsgObject);
 //static void U2P_vSetDelayTime(Tu2pMessage* tMsgObject);
 static void U2P_vSetLightStatus(Tu2pMessage* tMsgObject);
 static void U2P_vSetBuzzer(Tu2pMessage* tMsgObject);
-
+static void U2P_vSetDoorCtrlState(Tu2pMessage* tMsgObject);
+static void U2P_vSetDoorCtrlState2(Tu2pMessage* tMsgObject);
 
 static void U2P_vTransmitAck(void);
 
@@ -113,8 +124,8 @@ static const TpropertyConfig U2P_tPropertyTable[] = {
     //{12,                1},     //!< heat oil control
     //{13,                1},     //!< steam wash control
     //{14,                1},     //!< steam wash temp
-    //{15,                1},     //!< door control
-    //{16,                1},     //!< door state
+    {15,                1,                          U2P_vGetDoorCtrlState,          U2P_vSetDoorCtrlState},     //!< left door control
+    {16,                1,                          U2P_vGetDoorStatus,             NULL},     //!< left door state
     //{17,                1},     //!< door resistance value
     //{18,                1},     //!< motor temp
     //{19,                2},     //!< detection temp1
@@ -124,10 +135,13 @@ static const TpropertyConfig U2P_tPropertyTable[] = {
     //{23,                1},     //!< IR control
     //{24,                1},     //!< interlink control
     //{25,                1},     //!< clean remind
+    {26,                1,                          U2P_vGetDoorCtrlState2,          U2P_vSetDoorCtrlState2},     //!< right door control
+    {27,                1,                          U2P_vGetDoorStatus2,             NULL},     //!< right door state
+
     //{201,               2},     //!< key value
     //{202,               2},     //!< indicator light control value
     //{203,               1},     //!< gesture control
-    {0xFF,              1},     //!< error
+    {0xFF,              1,                          NULL,                           NULL}     //!< error
 };
 
 static uchar U2P_ucGetPropertyIndex(uchar ucPIID);
@@ -325,7 +339,7 @@ static void U2P_vPropertyUpload(Tu2pMessage* tMsgObject)
 static void U2P_vGetMachineState(Tu2pMessage* tMsgObject)
 {
     /**read property value*/
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x5A;   //!< demo
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = HOOD_tGetWorkingState();   //!< demo
 }
 
 static void U2P_vGetWindVolume(Tu2pMessage* tMsgObject)
@@ -341,10 +355,30 @@ static void U2P_vGetDelayTime(Tu2pMessage* tMsgObject)
 
 static void U2P_vGetLightStatus(Tu2pMessage* tMsgObject)
 {
-
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = LIG_tGetLightStatus(); //!< ToDo: test
 }
 
+static void U2P_vGetDoorCtrlState(Tu2pMessage* tMsgObject)
+{
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = MOT_tGetMotorCtrlState(MOT_INDEX_LEFT);    //!< ToDo: test
+}
 
+static void U2P_vGetDoorStatus(Tu2pMessage* tMsgObject)
+{
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = MOT_tGetMotorStatus(MOT_INDEX_LEFT);   //!< ToDo: test
+}
+
+static void U2P_vGetDoorCtrlState2(Tu2pMessage* tMsgObject)
+{
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = MOT_tGetMotorCtrlState(MOT_INDEX_RIGHT);    //!< ToDo: test
+}
+
+static void U2P_vGetDoorStatus2(Tu2pMessage* tMsgObject)
+{
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = MOT_tGetMotorStatus(MOT_INDEX_RIGHT);   //!< ToDo: test
+}
+
+/**************************************PIID Set Functions*********************************************/
 static void U2P_vSetMachineState(Tu2pMessage* tMsgObject)
 {
     uchar ucValue = 0;
@@ -357,6 +391,7 @@ static void U2P_vSetMachineState(Tu2pMessage* tMsgObject)
         HOOD_vSetWorkingState((THoodStateDef)ucValue);
     }
 }
+
 static void U2P_vSetWindVolume(Tu2pMessage* tMsgObject)
 {
     uchar ucValue = 0;
@@ -400,6 +435,35 @@ static void U2P_vSetBuzzer(Tu2pMessage* tMsgObject)
         BUZZ_vSetBuzzAlarm((TBuzzerRhythmIndex)ucValue);
     }
 }
+
+static void U2P_vSetDoorCtrlState(Tu2pMessage* tMsgObject)
+{
+    uchar ucValue = 0;
+
+    ucValue = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen];
+
+    /**check sequence validation and value*/
+    if (!U2P_bIsSameSeqValue() && (ucValue <= MOT_STATE_OPEN))
+    {
+        MOT_vSetMotorCtrlState(MOT_INDEX_LEFT, ucValue);
+    }
+}
+
+static void U2P_vSetDoorCtrlState2(Tu2pMessage* tMsgObject)
+{
+    uchar ucValue = 0;
+
+    ucValue = tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen];
+
+    /**check sequence validation and value*/
+    if (!U2P_bIsSameSeqValue() && (ucValue <= MOT_STATE_OPEN))
+    {
+        MOT_vSetMotorCtrlState(MOT_INDEX_RIGHT, ucValue);
+    }
+}
+
+
+
 /**
  Initialisation of the crc calculation (resets the present value of the crc). The initialisation
  must be called before starting a new crc calculation, hence every time a new message is received

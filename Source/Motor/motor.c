@@ -5,8 +5,9 @@ static volatile uint MOT_uiRawAdcValue[MOT_INDEX_NUM][MOT_AD_SAMPLE_TIMES];
 static volatile uint MOT_uiAdValue[MOT_INDEX_NUM] = {0, 0};
 static volatile uchar MOT_ucRawAdcValueCount[MOT_INDEX_NUM] = {0, 0};
 
-static TMotorStateDef MOT_tStateToSet[MOT_INDEX_NUM] = {0 , 0};
-static TMotorStateDef MOT_tStateOfCurrent[MOT_INDEX_NUM] = {0 , 0};
+static TMotorStateDef MOT_tCtrlStateToSet[MOT_INDEX_NUM] = {0 , 0};
+static TMotorStateDef MOT_tCtrlStateOfCurrent[MOT_INDEX_NUM] = {0 , 0};
+static TMotorStateDef MOT_tCurrentStatus[MOT_INDEX_NUM] = { 0 , 0 };
 
 //static uchar code MOT_ucPhaseCtrlPort[MOT_INDEX_NUM] = { MOT_PHASE1_PORT, MOT_PHASE2_PORT };
 //static uchar code MOT_ucPhaseCtrlPin[MOT_INDEX_NUM] = { MOT_PHASE1_PIN, MOT_PHASE2_PIN };
@@ -18,7 +19,7 @@ static TMotorStateDef MOT_tStateOfCurrent[MOT_INDEX_NUM] = {0 , 0};
 //static uchar code MOT_ucEnableCtrlPin[MOT_INDEX_NUM] = { MOT_ENABLE1_PIN, MOT_ENABLE2_PIN };
 
 static uchar MOT_ucSetMotorState(TMotorIndexDef tMotorIndex);
-static uchar MOT_ucEnterIdleState(tMotorIndex);
+static uchar MOT_ucEnterIdleState(TMotorIndexDef tMotorIndex);
 
 
 void MOT_vInit(void)
@@ -126,19 +127,29 @@ static void MOT_vSubTaskHandler(TMotorIndexDef tMotorIndex)
 			MOT_tTaskState[tMotorIndex] = MOT_TASK_IDLE;
 			(void)MOT_ucEnterIdleState(tMotorIndex);
 
-			MOT_tStateToSet[tMotorIndex] = MOT_STATE_CLOSE;		//!< test
-			MOT_tStateOfCurrent[tMotorIndex] = MOT_STATE_CLOSE;	//!< test
+			MOT_tCtrlStateToSet[tMotorIndex] = MOT_STATE_CLOSE;		//!< test
+			MOT_tCtrlStateOfCurrent[tMotorIndex] = MOT_STATE_CLOSE;	//!< test
+			MOT_tCurrentStatus[tMotorIndex] = MOT_STATE_CLOSE;	//!< init
 
 			break;
 		}
 			
 		case MOT_TASK_IDLE:
 		{
-			if (MOT_tStateOfCurrent[tMotorIndex] != MOT_tStateToSet[tMotorIndex])
+			if (MOT_tCtrlStateOfCurrent[tMotorIndex] != MOT_tCtrlStateToSet[tMotorIndex])
 			{
 				if (SET_OK == MOT_ucSetMotorState(tMotorIndex))
 				{
 					MOT_tTaskState[tMotorIndex] = MOT_TASK_RUNNING;
+
+					if (MOT_STATE_OPEN == MOT_tCtrlStateToSet[tMotorIndex])
+					{
+						MOT_tCurrentStatus[tMotorIndex] = MOT_STATE_OPENING;
+					}
+					else
+					{
+						MOT_tCurrentStatus[tMotorIndex] = MOT_STATE_CLOSING;
+					}
 				}
 			}
 
@@ -155,7 +166,8 @@ static void MOT_vSubTaskHandler(TMotorIndexDef tMotorIndex)
 				if (SET_OK == MOT_ucEnterIdleState(tMotorIndex))
 				{
 					MOT_tTaskState[tMotorIndex] = MOT_TASK_IDLE;
-					MOT_tStateOfCurrent[tMotorIndex] = MOT_tStateToSet[tMotorIndex];
+					MOT_tCtrlStateOfCurrent[tMotorIndex] = MOT_tCtrlStateToSet[tMotorIndex];
+					MOT_tCurrentStatus[tMotorIndex] = MOT_tCtrlStateToSet[tMotorIndex];	//!< update final status
 				}
 			}
 
@@ -168,7 +180,7 @@ static uchar MOT_ucSetMotorState(TMotorIndexDef tMotorIndex)
 {
 	uchar ucResult = SET_FAIL;
 
-	switch (MOT_tStateToSet[tMotorIndex])
+	switch (MOT_tCtrlStateToSet[tMotorIndex])
 	{
 		default:
 		case MOT_STATE_CLOSE:
@@ -235,7 +247,7 @@ static uchar MOT_ucSetMotorState(TMotorIndexDef tMotorIndex)
 	return ucResult;
 }
 
-static uchar MOT_ucEnterIdleState(tMotorIndex)
+static uchar MOT_ucEnterIdleState(TMotorIndexDef tMotorIndex)
 {
 	uchar ucResult = SET_FAIL;
 
@@ -272,4 +284,19 @@ void MOT_vTaskHandler(void)
 {
 	MOT_vSubTaskHandler(MOT_INDEX_LEFT);
 	MOT_vSubTaskHandler(MOT_INDEX_RIGHT);
+}
+
+void MOT_vSetMotorCtrlState(TMotorIndexDef tMotorIndex, TMotorStateDef tState)
+{
+	MOT_tCtrlStateToSet[tMotorIndex] = tState;
+}
+
+TMotorStateDef MOT_tGetMotorCtrlState(TMotorIndexDef tMotorIndex)
+{
+	return MOT_tCtrlStateOfCurrent[tMotorIndex];	//!< return current value
+}
+
+TMotorStateDef MOT_tGetMotorStatus(TMotorIndexDef tMotorIndex)
+{
+	return MOT_tCurrentStatus[tMotorIndex];	//!< return current value
 }

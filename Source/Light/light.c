@@ -67,6 +67,11 @@ void LIG_vSetTargetState(TLigStateDef tState)
 	LIG_tStateToSet = tState;
 }
 
+TLigStateDef LIG_tGetLightStatus(void)
+{
+	return LIG_tStateOfCurrent;	//!< return current value
+}
+
 void LIG_vUpdateWorkingTime(void)
 {
 	if (LIG_STATE_ON == LIG_tStateOfCurrent)

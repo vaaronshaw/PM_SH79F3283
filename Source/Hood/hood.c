@@ -14,3 +14,8 @@ BOOL HOOD_bIsWorkingState(THoodStateDef tState)
 {
 	return (tState == HOOD_tWorkingState);
 }
+
+THoodStateDef HOOD_tGetWorkingState(void)
+{
+	return HOOD_tWorkingState;
+}

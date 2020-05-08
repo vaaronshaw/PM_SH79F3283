@@ -43,7 +43,10 @@
 
 typedef enum {
 	MOT_STATE_CLOSE = 0,
-	MOT_STATE_OPEN
+	MOT_STATE_OPEN,
+	MOT_STATE_CLOSING,
+	MOT_STATE_OPENING,
+	MOT_STATE_BLOCKED
 }TMotorStateDef;
 
 
@@ -61,9 +64,9 @@ typedef enum {
 
 extern void MOT_vInit(void);
 extern void MOT_vTaskHandler(void);
-
-
-
+extern void MOT_vSetMotorCtrlState(TMotorIndexDef tMotorIndex, TMotorStateDef tState);
+extern TMotorStateDef MOT_tGetMotorCtrlState(TMotorIndexDef tMotorIndex);
+extern TMotorStateDef MOT_tGetMotorStatus(TMotorIndexDef tMotorIndex);
 
 
 

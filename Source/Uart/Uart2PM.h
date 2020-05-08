@@ -96,8 +96,8 @@ enum {
 	//U2P_PIID_HEAT_OIL_CTRL,			//!< heat oil control
 	//U2P_PIID_STEAM_WASH_CTRL,		//!< steam wash control
 	//U2P_PIID_STEAM_WASH_TEMP,		//!< steam wash temp
-	//U2P_PIID_DOOR_CTRL,				//!< door control
-	//U2P_PIID_DOOR_STATE,			//!< door state
+	U2P_PIID_DOOR_CTRL,				//!< door control (left door)
+	U2P_PIID_DOOR_STATUS,			//!< door state	(left door)
 	//U2P_PIID_DOOR_RESISTANCE,		//!< door resistance value
 	//U2P_PIID_MOTOR_TEMP,			//!< motor temp
 	//U2P_PIID_DETECTION_TEMP1,		//!< detection temp1
@@ -107,6 +107,8 @@ enum {
 	//U2P_PIID_IR_CTRL,				//!< IR control
 	//U2P_PIID_INTERLINK_CTRL,		//!< interlink control
 	//U2P_PIID_CLEAN_REMIND,			//!< clean remind
+	U2P_PIID_DOOR_CTRL2,				//!< door control (right door)
+	U2P_PIID_DOOR_STATUS2,			//!< door state	(right door)
 	//U2P_PIID_KEY_VALUE,				//!< key value
 	//U2P_PIID_INDICATOR_LIGHT,		//!< indicator light control value
 	//U2P_PIID_GESTURE_CTRL,			//!< gesture control

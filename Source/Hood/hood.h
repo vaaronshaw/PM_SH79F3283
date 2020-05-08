@@ -19,7 +19,7 @@ typedef enum{
 
 extern void HOOD_vSetWorkingState(THoodStateDef tState);
 extern BOOL HOOD_bIsWorkingState(THoodStateDef tState);
-
+extern THoodStateDef HOOD_tGetWorkingState(void);
 
 
 
