@@ -19,9 +19,11 @@ static Tu2pMessage U2P_tAckToSend;
 static Tu2pMessage U2P_tMessageToReceive;
 static uchar* U2P_pucNextCharToWrite;
 static uchar U2P_ucCharRemainToWrite = 0;   //!< for transmission
-static uchar U2P_ucCharRemainToCheck = 0;   //!< for receptin
-static ulong U2P_ulPropertyQueryFlag = 0;   //!< 0: property upload, >1: property query
-static ulong U2P_ulPropertySetFlag = 0;   
+static uchar U2P_ucCharRemainToCheck = 0;   //!< for reception
+
+static ulong U2P_ulPropertyUploadFlag = 0;   //!< 0: property upload, >1: property query
+//static ulong U2P_ulPropertySetFlag = 0;   
+
 static TU2PDllTaskIndex U2P_tTaskState = (TU2PDllTaskIndex)0;
 static uchar U2P_ucDataIndex = 0;
 static uchar U2P_ucCrc = 0;
@@ -31,6 +33,12 @@ static uchar U2P_ucMsgSeqValueLast = 0;
 
 static uchar U2P_ucTransAckFirst = 0;
 static uchar U2P_ucRetryCounter = 0;
+
+#define U2P_TASK_NUM    5
+static uchar U2P_ucTransmitTaskQueue[U2P_TASK_NUM] = { 0, 0, 0, 0, 0 };  //!< max 5 tasks in queue
+static uchar U2P_ucNextTaskIndex = 0;
+static uchar U2P_ucLatestTaskIndex = 0;
+
 //static uchar U2P_ucMessageIndex = 0;
 /**static functions**/
 
@@ -81,6 +89,7 @@ static void U2P_vSetBuzzer(Tu2pMessage* tMsgObject);
 static void U2P_vSetDoorCtrlState(Tu2pMessage* tMsgObject);
 static void U2P_vSetDoorCtrlState2(Tu2pMessage* tMsgObject);
 
+static void U2P_vCheckTransmitTask(void);
 static void U2P_vTransmitAck(void);
 
 static const Tu2pMessageObject U2P_tReceiveMsgTbl[] = {
@@ -270,10 +279,7 @@ static void U2P_vTransHeartbeat(Tu2pMessage* tMsgObject)
 
 static void U2P_vTransStatusGet(Tu2pMessage* tMsgObject)
 {
-    DEF_SET(U2P_ulPropertyQueryFlag, 1 << U2P_PIID_MACHINE_STATE);  //!< demo test
-    DEF_SET(U2P_ulPropertyQueryFlag, 1 << U2P_PIID_WIND_VOLUME);    //!< demo test
-
-    if (0 == U2P_ulPropertyQueryFlag)
+    if (0 == U2P_ulPropertyUploadFlag)
     {
         /**no propertys' value upload needed, require receiver to upload propertys*/
         ///*pucDataLen = 0;
@@ -285,32 +291,32 @@ static void U2P_vTransStatusGet(Tu2pMessage* tMsgObject)
     }
 }
 
-void U2P_vSetPropertyQueryFlag(uchar ucPIID)
+void U2P_vSetPropertyUploadFlag(uchar ucPIID)
 {
-    DEF_SET(U2P_ulPropertyQueryFlag, 1 << ucPIID);
+    DEF_SET(U2P_ulPropertyUploadFlag, 1 << ucPIID);
 }
 
 
 
 static void U2P_vTransStatusSet(Tu2pMessage* tMsgObject)
 {
-    uchar i = 0;
+    //uchar i = 0;
 
-    for (i = 0; i < 32, U2P_ulPropertySetFlag; i++)
-    {
-        if (DEF_TEST(U2P_ulPropertySetFlag, 1 << i))
-        {
-            DEF_RES(U2P_ulPropertySetFlag, 1 << i);
+    //for (i = 0; i < 32, U2P_ulPropertySetFlag; i++)
+    //{
+    //    if (DEF_TEST(U2P_ulPropertySetFlag, 1 << i))
+    //    {
+    //        DEF_RES(U2P_ulPropertySetFlag, 1 << i);
 
-            tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = U2P_tPropertyTable[i].ucPIID;
-            tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = U2P_tPropertyTable[i].ucPiidValueLen;
+    //        tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = U2P_tPropertyTable[i].ucPIID;
+    //        tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = U2P_tPropertyTable[i].ucPiidValueLen;
 
-            if (U2P_tPropertyTable[i].pPropSetFunc != NULL)
-            {
-                U2P_tPropertyTable[i].pPropSetFunc(tMsgObject);
-            }
-        }
-    }
+    //        if (U2P_tPropertyTable[i].pPropSetFunc != NULL)
+    //        {
+    //            U2P_tPropertyTable[i].pPropSetFunc(tMsgObject);
+    //        }
+    //    }
+    //}
 }
 
 /**propertys function*/
@@ -318,11 +324,11 @@ static void U2P_vPropertyUpload(Tu2pMessage* tMsgObject)
 {
     uchar i = 0;
 
-    for (i=0; i<32, U2P_ulPropertyQueryFlag; i++)
+    for (i=0; i<32, U2P_ulPropertyUploadFlag; i++)
     {
-        if (DEF_TEST(U2P_ulPropertyQueryFlag, 1<<i))
+        if (DEF_TEST(U2P_ulPropertyUploadFlag, 1<<i))
         {
-            DEF_RES(U2P_ulPropertyQueryFlag, 1 << i);
+            DEF_RES(U2P_ulPropertyUploadFlag, 1 << i);
 
             tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = U2P_tPropertyTable[i].ucPIID;
             tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = U2P_tPropertyTable[i].ucPiidValueLen;
@@ -339,12 +345,12 @@ static void U2P_vPropertyUpload(Tu2pMessage* tMsgObject)
 static void U2P_vGetMachineState(Tu2pMessage* tMsgObject)
 {
     /**read property value*/
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = HOOD_tGetWorkingState();   //!< demo
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = HOOD_tGetWorkingState(); 
 }
 
 static void U2P_vGetWindVolume(Tu2pMessage* tMsgObject)
 {
-    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = 0x04;      //!< demo
+    tMsgObject->ucData[tMsgObject->tMsgHeader.ucDataLen++] = FAN_tGetCurrentSpeed();  
 }
 
 static void U2P_vGetDelayTime(Tu2pMessage* tMsgObject)
@@ -402,6 +408,7 @@ static void U2P_vSetWindVolume(Tu2pMessage* tMsgObject)
     if (!U2P_bIsSameSeqValue() && (ucValue <= FAN_SPEED_4))
     {
         FAN_vSetTargetSpeed((TFanSpeedDef)ucValue);
+
     }
 }
 
@@ -461,8 +468,6 @@ static void U2P_vSetDoorCtrlState2(Tu2pMessage* tMsgObject)
         MOT_vSetMotorCtrlState(MOT_INDEX_RIGHT, ucValue);
     }
 }
-
-
 
 /**
  Initialisation of the crc calculation (resets the present value of the crc). The initialisation
@@ -791,40 +796,65 @@ void U2P_vPLTaskHandler(void)
     }
     else
     {
-        /***/
+        /**idle state ?*/
+        U2P_vCheckTransmitTask();
+    }
+}
+
+static void U2P_vCheckTransmitTask(void)
+{
+    uchar ucMessageIndex;
+    uchar ucMsgID = 0;
+
+    if (U2P_ucNextTaskIndex != U2P_ucLatestTaskIndex)   //!< queue not empty
+    {
+        if (U2P_ucTransmitTaskQueue[U2P_ucNextTaskIndex] != 0)  //!< check validation
+        {
+            ucMsgID = U2P_ucTransmitTaskQueue[U2P_ucNextTaskIndex]; //!< read task from queue
+            U2P_ucTransmitTaskQueue[U2P_ucNextTaskIndex] = 0;   //!< reset value
+            U2P_ucNextTaskIndex = (++U2P_ucNextTaskIndex) % U2P_TASK_NUM;
+
+            /**init task*/
+            ucMessageIndex = U2P_ucGetTransmitMessageIndex(ucMsgID);
+            if (ucMessageIndex >= U2P_TRANSMIT_MSG_TBL_SIZE)
+            {
+                return; //!< no message found
+            }
+
+            /**head*/
+            U2P_tMessageToSend.tMsgHeader.ucHead = U2P_MSG_HEAD_DEVICE;
+            /**sequence */
+            U2P_tMessageToSend.tMsgHeader.ucMsgSeqValue = (ucMsgID != U2P_MSG_ID_ACK) ? (++U2P_ucMsgSeqValue) : U2P_ucMsgSeqValue;
+            /**msg id*/
+            U2P_tMessageToSend.tMsgHeader.ucMsgID = ucMsgID;
+            /**data length & data*/
+            U2P_tMessageToSend.tMsgHeader.ucDataLen = 0;    //!< reset value
+            U2P_tTransmitMsgTbl[ucMessageIndex].pServiceFunc(&U2P_tMessageToSend);
+
+            /**set retry counter based on ack flag */
+            if (U2P_ACK == U2P_tTransmitMsgTbl[ucMessageIndex].ucAckRequire)
+            {
+                U2P_ucRetryCounter = U2P_NO_ACK_RETRY_TIMES + 1;
+            }
+            else
+            {
+                U2P_ucRetryCounter = 1;
+            }
+
+            TMR_uiTimer[TMR_U2P_MSG_NO_ACK_TIMEOUT] = 0;
+        }
+        else
+        {
+            U2P_ucNextTaskIndex = (++U2P_ucNextTaskIndex) % U2P_TASK_NUM;   //!< skip empty task
+        }
     }
 }
 
 void U2P_vTransmitMessage(uchar ucMsgID)
 {
-    uchar ucMessageIndex;
-
-    ucMessageIndex = U2P_ucGetTransmitMessageIndex(ucMsgID);
-    if (ucMessageIndex >= U2P_TRANSMIT_MSG_TBL_SIZE)
-    {
-        return; //!< no message found
-    }
-
-    /**head*/
-    U2P_tMessageToSend.tMsgHeader.ucHead = U2P_MSG_HEAD_DEVICE;
-    /**sequence */
-    U2P_tMessageToSend.tMsgHeader.ucMsgSeqValue = (ucMsgID != U2P_MSG_ID_ACK) ? (++U2P_ucMsgSeqValue) : U2P_ucMsgSeqValue;
-    /**msg id*/
-    U2P_tMessageToSend.tMsgHeader.ucMsgID = ucMsgID;
-    /**data length & data*/
-    U2P_tMessageToSend.tMsgHeader.ucDataLen = 0;    //!< reset value
-    U2P_tTransmitMsgTbl[ucMessageIndex].pServiceFunc(&U2P_tMessageToSend);
-
-    if (U2P_ACK == U2P_tTransmitMsgTbl[ucMessageIndex].ucAckRequire)
-    {
-        U2P_ucRetryCounter = U2P_NO_ACK_RETRY_TIMES + 1;
-    }
-    else
-    {
-        U2P_ucRetryCounter = 1;
-    }
-
-    TMR_uiTimer[TMR_U2P_MSG_NO_ACK_TIMEOUT] = 0;
+    /**add task into queue*/
+    U2P_ucTransmitTaskQueue[U2P_ucLatestTaskIndex] = ucMsgID;
+    U2P_ucLatestTaskIndex = (++U2P_ucLatestTaskIndex) % U2P_TASK_NUM;   //!< point to next index
 }
 
 static void U2P_vTransmitAck(void)

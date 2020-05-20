@@ -110,7 +110,7 @@ void BUZZ_vTaskHandler(void)
 
 		case BUZZ_TASK_IDLE:
 		{
-			if (BUZZ_RHYTHM_NUM != BUZZ_tBuzzerInfor.tIndex)
+			if (BUZZ_RHYTHM_NUM > BUZZ_tBuzzerInfor.tIndex)
 			{
 				BUZZ_tBuzzerInfor.tTaskState = BUZZ_TASK_ON;
 

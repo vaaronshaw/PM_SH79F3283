@@ -1,4 +1,6 @@
 #include "light.h"
+#include "Uart2PM.h"
+
 
 static TLigStateDef LIG_tStateToSet = (TLigStateDef)0;
 static TLigStateDef LIG_tStateOfCurrent = (TLigStateDef)0;
@@ -55,9 +57,13 @@ void LIG_vTaskHandler(void)
 {
 	if (LIG_tStateOfCurrent != LIG_tStateToSet)
 	{
-		if (1 == LIG_ucSetState(LIG_tStateToSet))
+		if (SET_OK == LIG_ucSetState(LIG_tStateToSet))
 		{
 			LIG_tStateOfCurrent = LIG_tStateToSet;
+
+			/**transmit status to UI*/
+			U2P_vSetPropertyUploadFlag(U2P_PIID_LIGHT);
+			U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
 		}
 	}
 }

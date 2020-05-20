@@ -1,4 +1,5 @@
 #include "fan.h"
+#include "Uart2PM.h"
 
 static TFanSpeedDef FAN_tSpeedToSet = (TFanSpeedDef)0;
 static TFanSpeedDef FAN_tSpeedOfCurrent = (TFanSpeedDef)0;
@@ -122,6 +123,10 @@ void FAN_vTaskHandler(void)
 		{
 			/**io state set succes, then update current speed*/
 			FAN_tSpeedOfCurrent = FAN_tSpeedToSet;
+
+			/**transmit status to UI*/
+			U2P_vSetPropertyUploadFlag(U2P_PIID_WIND_VOLUME);
+			U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
 		}
 	}
 }
@@ -130,6 +135,11 @@ void FAN_vTaskHandler(void)
 void FAN_vSetTargetSpeed(TFanSpeedDef tSpeedIndex)
 {
 	FAN_tSpeedToSet = tSpeedIndex;
+}
+
+TFanSpeedDef FAN_tGetCurrentSpeed(void)
+{
+	return FAN_tSpeedOfCurrent;
 }
 
 void FAN_vUpdateWorkingTime(void)
