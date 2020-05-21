@@ -1,4 +1,6 @@
 #include "motor.h"
+#include "Uart2PM.h"
+
 
 static volatile TMotorTaskDef MOT_tTaskState[MOT_INDEX_NUM] = {0, 0};
 static volatile uint MOT_uiRawAdcValue[MOT_INDEX_NUM][MOT_AD_SAMPLE_TIMES];
@@ -9,14 +11,8 @@ static TMotorStateDef MOT_tCtrlStateToSet[MOT_INDEX_NUM] = {0 , 0};
 static TMotorStateDef MOT_tCtrlStateOfCurrent[MOT_INDEX_NUM] = {0 , 0};
 static TMotorStateDef MOT_tCurrentStatus[MOT_INDEX_NUM] = { 0 , 0 };
 
-//static uchar code MOT_ucPhaseCtrlPort[MOT_INDEX_NUM] = { MOT_PHASE1_PORT, MOT_PHASE2_PORT };
-//static uchar code MOT_ucPhaseCtrlPin[MOT_INDEX_NUM] = { MOT_PHASE1_PIN, MOT_PHASE2_PIN };
-//
-//static uchar code MOT_ucSleepCtrlPort[MOT_INDEX_NUM] = { MOT_SLEEP1_PORT, MOT_SLEEP2_PORT };
-//static uchar code MOT_ucSleepCtrlPin[MOT_INDEX_NUM] = { MOT_SLEEP1_PIN, MOT_SLEEP2_PIN};
-//
-//static uchar code MOT_ucEnableCtrlPort[MOT_INDEX_NUM] = { MOT_ENABLE1_PORT, MOT_ENABLE2_PORT };
-//static uchar code MOT_ucEnableCtrlPin[MOT_INDEX_NUM] = { MOT_ENABLE1_PIN, MOT_ENABLE2_PIN };
+static uchar MOT_ucMotorRunningTime[MOT_INDEX_NUM] = {0, 0};
+
 
 static uchar MOT_ucSetMotorState(TMotorIndexDef tMotorIndex);
 static uchar MOT_ucEnterIdleState(TMotorIndexDef tMotorIndex);
@@ -119,6 +115,10 @@ static void MOT_vAdSampleTask(TMotorIndexDef tMotorIndex)
 
 static void MOT_vSubTaskHandler(TMotorIndexDef tMotorIndex)
 {
+#define MOT_TASK_BASE_TICKS		50	//!< 50ms
+#define MOT_RUNNING_TIME_MAX	200	//!< 200*50 = 10s??
+
+
 	switch (MOT_tTaskState[tMotorIndex])
 	{
 		default:
@@ -128,8 +128,8 @@ static void MOT_vSubTaskHandler(TMotorIndexDef tMotorIndex)
 			(void)MOT_ucEnterIdleState(tMotorIndex);
 
 			MOT_tCtrlStateToSet[tMotorIndex] = MOT_STATE_CLOSE;		//!< test
-			MOT_tCtrlStateOfCurrent[tMotorIndex] = MOT_STATE_CLOSE;	//!< test
-			MOT_tCurrentStatus[tMotorIndex] = MOT_STATE_CLOSE;	//!< init
+			MOT_tCtrlStateOfCurrent[tMotorIndex] = MOT_STATE_OPEN;	//!< test
+			MOT_tCurrentStatus[tMotorIndex] = MOT_STATE_OPEN;	//!< init
 
 			break;
 		}
@@ -150,6 +150,18 @@ static void MOT_vSubTaskHandler(TMotorIndexDef tMotorIndex)
 					{
 						MOT_tCurrentStatus[tMotorIndex] = MOT_STATE_CLOSING;
 					}
+
+					/**upload status to UI*/
+					if (MOT_INDEX_LEFT == tMotorIndex)
+					{
+						U2P_vSetPropertyUploadFlag(U2P_PIID_DOOR_STATUS);
+					}
+					else
+					{
+						U2P_vSetPropertyUploadFlag(U2P_PIID_DOOR_STATUS2);
+					}
+
+					U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
 				}
 			}
 
@@ -160,14 +172,31 @@ static void MOT_vSubTaskHandler(TMotorIndexDef tMotorIndex)
 		{
 			MOT_vAdSampleTask(tMotorIndex);
 
-			/**check ad value, if exceeds threshold means reach target position, then back to idle state*/
-			if (MOT_uiAdValue[tMotorIndex] > MOT_BLOCK_AD_VALUE_MAX)
+			/**
+			* 1. check ad value, if exceeds threshold means reach target position, then back to idle state
+			* 2. 
+			*/
+			if ((MOT_uiAdValue[tMotorIndex] > MOT_BLOCK_AD_VALUE_MAX) || (MOT_ucMotorRunningTime[tMotorIndex] >= MOT_RUNNING_TIME_MAX))	//!< ToDo: check it
 			{
 				if (SET_OK == MOT_ucEnterIdleState(tMotorIndex))
 				{
 					MOT_tTaskState[tMotorIndex] = MOT_TASK_IDLE;
 					MOT_tCtrlStateOfCurrent[tMotorIndex] = MOT_tCtrlStateToSet[tMotorIndex];
 					MOT_tCurrentStatus[tMotorIndex] = MOT_tCtrlStateToSet[tMotorIndex];	//!< update final status
+
+					/**upload status to UI*/
+					if (MOT_INDEX_LEFT == tMotorIndex)
+					{
+						U2P_vSetPropertyUploadFlag(U2P_PIID_DOOR_CTRL);
+						U2P_vSetPropertyUploadFlag(U2P_PIID_DOOR_STATUS);
+					}
+					else
+					{
+						U2P_vSetPropertyUploadFlag(U2P_PIID_DOOR_CTRL2);
+						U2P_vSetPropertyUploadFlag(U2P_PIID_DOOR_STATUS2);
+					}
+
+					U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
 				}
 			}
 
@@ -277,6 +306,27 @@ static uchar MOT_ucEnterIdleState(TMotorIndexDef tMotorIndex)
 	}
 
 	return ucResult;
+}
+
+static void MOT_vUpdateRunningTime(void)
+{
+	if (MOT_TASK_RUNNING == MOT_tTaskState[MOT_INDEX_LEFT])
+	{
+		MOT_ucMotorRunningTime[MOT_INDEX_LEFT]++;
+	}
+	else
+	{
+		MOT_ucMotorRunningTime[MOT_INDEX_LEFT] = 0;
+	}
+
+	if (MOT_TASK_RUNNING == MOT_tTaskState[MOT_INDEX_RIGHT])
+	{
+		MOT_ucMotorRunningTime[MOT_INDEX_RIGHT]++;
+	}
+	else
+	{
+		MOT_ucMotorRunningTime[MOT_INDEX_RIGHT] = 0;
+	}
 }
 
 

@@ -34,8 +34,8 @@ static uchar U2P_ucMsgSeqValueLast = 0;
 static uchar U2P_ucTransAckFirst = 0;
 static uchar U2P_ucRetryCounter = 0;
 
-#define U2P_TASK_NUM    5
-static uchar U2P_ucTransmitTaskQueue[U2P_TASK_NUM] = { 0, 0, 0, 0, 0 };  //!< max 5 tasks in queue
+#define U2P_TASK_NUM    10
+static uchar U2P_ucTransmitTaskQueue[U2P_TASK_NUM] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };  //!< max 10 tasks in queue
 static uchar U2P_ucNextTaskIndex = 0;
 static uchar U2P_ucLatestTaskIndex = 0;
 
