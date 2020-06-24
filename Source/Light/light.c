@@ -70,7 +70,11 @@ void LIG_vTaskHandler(void)
 
 void LIG_vSetTargetState(TLigStateDef tState)
 {
-	LIG_tStateToSet = tState;
+	if (tState <= LIG_STATE_ON)
+	{
+		LIG_tStateToSet = tState;
+		LIG_vTaskHandler();	//!< force change
+	}
 }
 
 TLigStateDef LIG_tGetLightStatus(void)

@@ -1,0 +1,117 @@
+#ifndef _BUZZER_H
+#define _BUZZER_H
+
+#include "defines.h"
+#include "cpu.h"
+#if (CPU_TYPE==CPU_SH79F3283)
+#include "SH79F3283.h"
+#elif (CPU_TYPE==CPU_SH79F328)
+#include "SH79F328.h"
+#else
+#include "SH79F328.h"
+#endif
+
+typedef enum _TBuzzerTask {
+	BUZZ_TASK_INIT = 0,
+	BUZZ_TASK_IDLE,
+	BUZZ_TASK_ON,
+	BUZZ_TASK_OFF
+}TBuzzerTask;
+
+typedef enum {
+	BUZZ_TONE_INDEX_0 = 0,
+	BUZZ_TONE_INDEX_1,
+	BUZZ_TONE_INDEX_2,
+	BUZZ_TONE_INDEX_3,
+	BUZZ_TONE_INDEX_4,
+	BUZZ_TONE_INDEX_NUM
+}TtoneScaleIndex;
+
+
+typedef enum _TBuzzerAlarm {
+	BUZZ_RHYTHM_POWER_OFF = 0,
+	BUZZ_RHYTHM_SELECT	  = 1,
+	BUZZ_RHYTHM_INVALID   = 2,
+	BUZZ_RHYTHM_ERROR     = 3,
+	BUZZ_RHYTHM_POWER_ON  = 4,
+	BUZZ_RHYTHM_LONG_BEEP,
+	BUZZ_RHYTHM_NUM
+}TBuzzerRhythmIndex;
+
+typedef struct {
+	uchar ucToneIndex;
+	uint uiBuzzerOnTime;
+	uint uiBuzzerOffTime;
+}TRhythmConfig;
+
+typedef struct {
+	uint uiOnTime;
+	uint uiOffTime;
+	uchar ucRhythmCounter;
+	TBuzzerTask tTaskState;
+	TBuzzerRhythmIndex tIndex;
+	//TBuzzerRhythmIndex tIndexLast;
+
+	uchar ucIndexInRhythm;
+}TBuzzerInfo;
+
+#define BUZZ_BASE_TICK	2
+#define BUZZ_MS2TICK(x) ((x) / BUZZ_BASE_TICK)
+
+
+//#define BUZZ_PWM_GPIO_PORT      GpioPortC
+//#define BUZZ_PWM_GPIO_PIN       GpioPin13
+//
+//#define BUZZ_CTRL_GPIO_PORT		GpioPortC
+//#define BUZZ_CTRL_GPIO_PIN		GpioPin14
+
+#define BUZZ_CTRL_BEEP_ON()			(P0 |= 0x04)	//Gpio_ClrIO(BUZZ_CTRL_GPIO_PORT, BUZZ_CTRL_GPIO_PIN) 
+#define BUZZ_CTRL_BEEP_OFF()		(P0 &= ~0x04)	//Gpio_SetIO(BUZZ_CTRL_GPIO_PORT, BUZZ_CTRL_GPIO_PIN) 
+
+#define BUZZ_OUTPUT_ENABLE()     {PWMLO = 0x55; PWMEN =0x81; PWMLO = 0x0;}	//{Tim3_M0_Enable_Output(TRUE); /*TIM3 端口输出使能*/Tim3_M0_Run();}
+#define BUZZ_OUTPUT_DISABLE()    {PWMLO = 0x55; PWMEN = 0x0; PWMLO = 0x0;}	//{Tim3_M0_Enable_Output(FALSE); /*TIM3 端口输出使能*/Tim3_M0_Stop();}
+
+
+extern void BUZZ_vInit(void);
+extern void BUZZ_vSetBuzzAlarm(TBuzzerRhythmIndex tType);
+extern void BUZZ_vTaskHandler(void);
+
+extern void BUZZ_vUpdateFrequency(uint uiValue);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#endif

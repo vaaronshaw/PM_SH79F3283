@@ -13,7 +13,7 @@
 #include "task.h"
 #include "defines.h"
 #include "Uart2PM.h"
-
+#include "motor.h"
 
 
 //UINT16 Val;
@@ -122,7 +122,7 @@ Other         : ע������޸ļ�¼�������汾��
 --------------------------------------------------------*/
 void INT_EUART0(void) interrupt 4
 { 
-	uchar ucData = 0;
+	//uchar ucData = 0;
 
 	_push_(INSCON);
    
@@ -135,8 +135,8 @@ void INT_EUART0(void) interrupt 4
 	else if(1 == RI)
 	{
 		/**RX isr handler*/
-		ucData = SBUF;
-		//U2P_vRxEventHandler(ucData);
+		//ucData = SBUF;
+		U2P_vRxEventHandler();
 		RI = 0;
 	}
 
@@ -158,11 +158,11 @@ void INT_TIMER3(void) interrupt 11
 	_push_(INSCON);
 	
 	select_bank1();
-	if (1 == TF3)	
-	{
+	//if (1 == TF3)	
+	//{
 		TASK_vIRQHandler();
 		TF3 = 0;	//!< sofware or hardware clear, decide by OP_TF3
-	}
+	//}
 	select_bank0();
 	_pop_(INSCON);
 }
@@ -244,13 +244,22 @@ Author        : jet
 Date          : 2014.11.21
 Other         : ע������޸ļ�¼�������汾��
 --------------------------------------------------------*/
-//void INT_INT4(void) interrupt 10
-//{ 
-//	_push_(INSCON);
-//   
-//   
-//	_pop_(INSCON);       
-//}
+void INT_INT4(void) interrupt 10
+{ 
+	//uchar ucValue = 0;
+
+	_push_(INSCON);
+   
+	if (EXF1 & 0x40)	//!< IF46
+	{
+		EXF1 &= ~ 0x40;
+		//ucValue = GET_IO_STATE(MOT_SWITCH_PORT, MOT_SWITCH_PIN);
+		MOT_vFinishPosition();
+	}
+
+
+	_pop_(INSCON);       
+}
 
 /*-------------------------------------------------------
 FunctionName  : INT_INT3
@@ -440,4 +449,3 @@ Other         : ע������޸ļ�¼�������汾��
 //   
 //	_pop_(INSCON);       
 //}
-

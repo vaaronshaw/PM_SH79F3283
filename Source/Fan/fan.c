@@ -1,11 +1,17 @@
 #include "fan.h"
 #include "Uart2PM.h"
+#include "motor.h"
+
+
+
 
 static TFanSpeedDef FAN_tSpeedToSet = (TFanSpeedDef)0;
 static TFanSpeedDef FAN_tSpeedOfCurrent = (TFanSpeedDef)0;
 
 static uchar FAN_ucSetSpeed(TFanSpeedDef tSpeedIndex);
 static ulong FAN_ulRunningTime = 0;
+
+static uchar FAN_ucStartSequence = 0;
 
 void FAN_vInit(void)
 {
@@ -119,22 +125,105 @@ void FAN_vTaskHandler(void)
 {
 	if (FAN_tSpeedOfCurrent != FAN_tSpeedToSet)
 	{
-		if (SET_OK == FAN_ucSetSpeed(FAN_tSpeedToSet))
+		if ((FAN_SPEED_0 == FAN_tSpeedOfCurrent) && (FAN_SPEED_2 == FAN_tSpeedToSet))
 		{
+			FAN_ucStartSequence = 1;
+		}
+		else
+		{
+			FAN_ucStartSequence = 0;
+		}
+
+		if (0 == FAN_ucStartSequence)
+		{
+			if (SET_OK == FAN_ucSetSpeed(FAN_tSpeedToSet))
+			{
+				/**io state set succes, then update current speed*/
+				FAN_tSpeedOfCurrent = FAN_tSpeedToSet;
+
+				/**transmit status to UI*/
+				U2P_vSetPropertyUploadFlag(U2P_PIID_WIND_VOLUME);
+				U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
+			}
+		}
+
+#if 0
+		if (MOT_ulGetOpenTime(MOT_INDEX_UP_DOWN) >= MOT_TIME_SEC2TICKS(1))	//!< 1 seconds
+		{
+			if (SET_OK == FAN_ucSetSpeed(FAN_tSpeedToSet))
+			{
+				/**io state set succes, then update current speed*/
+				FAN_tSpeedOfCurrent = FAN_tSpeedToSet;
+
+				/**transmit status to UI*/
+				U2P_vSetPropertyUploadFlag(U2P_PIID_WIND_VOLUME);
+				U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
+			}
+		}
+		else
+		{
+			if (FAN_tSpeedOfCurrent != FAN_SPEED_0)
+			{
+				if (SET_OK == FAN_ucSetSpeed(FAN_SPEED_0))
+				{
+					/**io state set succes, then update current speed*/
+					FAN_tSpeedOfCurrent = FAN_SPEED_0;
+
+					/**transmit status to UI*/
+					U2P_vSetPropertyUploadFlag(U2P_PIID_WIND_VOLUME);
+					U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
+				}
+			}
+		}
+#endif
+	}
+
+	if (1 == FAN_ucStartSequence)
+	{
+		if (SET_OK == FAN_ucSetSpeed(FAN_SPEED_1))
+		{
+			FAN_ucStartSequence = 2;
+
 			/**io state set succes, then update current speed*/
-			FAN_tSpeedOfCurrent = FAN_tSpeedToSet;
+			FAN_tSpeedOfCurrent = FAN_SPEED_2;
 
 			/**transmit status to UI*/
 			U2P_vSetPropertyUploadFlag(U2P_PIID_WIND_VOLUME);
 			U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
 		}
 	}
+	else if (2 == FAN_ucStartSequence)
+	{
+		if (FAN_ulRunningTime > 2)		//!< SPEED1 running over 2 seconds
+		{
+			if (SET_OK == FAN_ucSetSpeed(FAN_SPEED_2))
+			{
+				FAN_ucStartSequence = 0;	//!< clear
+
+				/**io state set succes, then update current speed*/
+				FAN_tSpeedOfCurrent = FAN_SPEED_2;
+
+				/**transmit status to UI*/
+				U2P_vSetPropertyUploadFlag(U2P_PIID_WIND_VOLUME);
+				U2P_vTransmitMessage(U2P_MSG_ID_STATUS_GET);
+			}
+		}
+	}
+	else
+	{
+		//!< empty
+	}
+
 }
 
 /**Call this funtion to set target fan speed to set*/
 void FAN_vSetTargetSpeed(TFanSpeedDef tSpeedIndex)
 {
-	FAN_tSpeedToSet = tSpeedIndex;
+	if (tSpeedIndex <= FAN_SPEED_4)
+	{
+		FAN_tSpeedToSet = tSpeedIndex;
+		FAN_vTaskHandler();	//!< force run
+	}
 }
 
 TFanSpeedDef FAN_tGetCurrentSpeed(void)
@@ -150,6 +239,8 @@ void FAN_vUpdateWorkingTime(void)
 		{
 			/**running time exceeds max time, should shutdown power*/
 			FAN_vSetTargetSpeed(FAN_SPEED_0);
+			FAN_tSpeedOfCurrent = FAN_SPEED_0;
+			FAN_tSpeedToSet = FAN_SPEED_0;
 		}
 	}
 	else
